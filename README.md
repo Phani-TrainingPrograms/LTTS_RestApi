@@ -3245,25 +3245,2481 @@ An employee can retrieve employee directory information, but only an administrat
 
 # MODULE 6: HANDS-ON PRACTICAL LABS
 
-## 6.1 Lab 1 – Explore an Existing REST API
+# **Module 6: Practical REST API Development – End-to-End Implementation**
 
-**Objective:** Understand how a client communicates with a REST API.
+This module focuses on implementing a complete REST API using **ASP.NET Core Web API, C#, SQL Server, JSON, and JWT authentication**.
 
-**Tools Required:**
+The objective is to bring together the concepts covered in Modules 1–5 and demonstrate how they work in an actual application.
 
-- Postman or curl.
-- Internet connection.
-- A public test API.
+By the end of this module, learners should be able to:
 
-Use the JSONPlaceholder test service.
+- Create an ASP.NET Core Web API project.
+- Understand the architecture and responsibilities of API components.
+- Implement CRUD operations using HTTP methods.
+- Work with JSON request and response payloads.
+- Connect REST APIs to SQL Server using Entity Framework Core.
+- Implement input validation and error handling.
+- Document APIs using OpenAPI and Swagger UI.
+- Secure API endpoints using JWT authentication and authorization.
+- Test APIs using Postman.
 
-Base URL:
+## **6.1 Project Scenario – Employee Management REST API**
 
-```text
-https://jsonplaceholder.typicode.com
+Consider an IT organization with offices in Bengaluru, Chennai, Hyderabad, and Pune.
+
+The organization wants to develop an Employee Management System that allows HR administrators to manage employee information through a web application.
+
+The organization has decided to expose employee-related functionality through REST APIs so that multiple applications can consume the same backend services.
+
+### **Business Requirements**
+
+The Employee Management API should support the following operations:
+
+| Requirement             | Description                             |
+| ----------------------- | --------------------------------------- |
+| Create Employee         | Register a new employee                 |
+| Retrieve Employees      | Retrieve all employee records           |
+| Retrieve Employee by ID | Retrieve an individual employee         |
+| Update Employee         | Modify existing employee details        |
+| Delete Employee         | Remove an employee record               |
+| Search Employees        | Search employees by name or city        |
+| Authentication          | Allow users to log in                   |
+| Authorization           | Restrict operations based on user roles |
+
+### **Real-World Example**
+
+An HR administrator named Priya works in the Bengaluru office.
+
+She uses an Angular application to register a new employee named Ravi Kumar, who joins the development team in Chennai.
+
+The Angular application sends an HTTP POST request to the Employee Management API.
+
+The API validates the incoming information, stores the employee record in SQL Server, and returns a successful response.
+
+The same API can later be consumed by a mobile application without implementing the employee business logic again.
+
+## **6.2 Overall System Architecture**
+
+Before implementing the application, let's understand the architecture.
+
+[Project Architecture Diagram In Net Asp Net Mvc Architecture](https://images.openai.com/static-rsc-4/0DBT7y3i8RDyWDgC4AXcRDVDQ8RuzTzBneKEzl2NqSkbDPr0NG1cc9_2WsNQhQYHFwC_Ya7fh-_z8yeJgLUkG4Cph7x7BZOxrFdbz9zkN0gJVMiHCJlrWMwJL5eg7UoIi7DCAmGD0XYC4L6XHt95TdeVvRSEvIUGITd5PtvptRk?purpose=inline)
+
+[neo005kmquser.z21.web.core.windows.net](https://neo005kmquser.z21.web.core.windows.net/project-architecture-diagram-in-net.html?utm_source=chatgpt.com)
+
+The application follows a layered architecture to separate responsibilities.
+
+### **Architecture Components**
+
+**1. Client Application**
+
+The client application represents the frontend consuming the REST API. It can be developed using Angular, React, Blazor, or a mobile application framework.
+
+**2. API Controller**
+
+The controller receives HTTP requests and returns HTTP responses. It maps incoming requests to the appropriate business operations and should avoid containing extensive business logic.
+
+**3. Service Layer**
+
+The service layer implements business rules and application workflows. For example, it checks whether an employee exists before updating or deleting an employee record.
+
+**4. Repository / Data Access Layer**
+
+This layer manages database communication. In this implementation, Entity Framework Core will be used to communicate with SQL Server.
+
+**5. Database**
+
+SQL Server stores employee information persistently. Unlike an in-memory collection, database records remain available after the API application restarts.
+
+### **Request Processing Flow**
+
+\#chatgpt-mermaid-\_r_4rl\_{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;fill:rgb(13, 13, 13);}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#chatgpt-mermaid-\_r_4rl\_ .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-\_r_4rl\_ .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-\_r_4rl\_ .error-icon{fill:rgb(243, 243, 243);}#chatgpt-mermaid-\_r_4rl\_ .error-text{fill:rgb(13, 13, 13);stroke:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4rl\_ .edge-thickness-normal{stroke-width:1px;}#chatgpt-mermaid-\_r_4rl\_ .edge-thickness-thick{stroke-width:3.5px;}#chatgpt-mermaid-\_r_4rl\_ .edge-pattern-solid{stroke-dasharray:0;}#chatgpt-mermaid-\_r_4rl\_ .edge-thickness-invisible{stroke-width:0;fill:none;}#chatgpt-mermaid-\_r_4rl\_ .edge-pattern-dashed{stroke-dasharray:3;}#chatgpt-mermaid-\_r_4rl\_ .edge-pattern-dotted{stroke-dasharray:2;}#chatgpt-mermaid-\_r_4rl\_ .marker{fill:rgb(143, 143, 143);stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_4rl\_ .marker.cross{stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_4rl\_ svg{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;}#chatgpt-mermaid-\_r_4rl\_ p{margin:0;}#chatgpt-mermaid-\_r_4rl\_ .label{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4rl\_ .cluster-label text{fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4rl\_ .cluster-label span{color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4rl\_ .cluster-label span p{background-color:transparent;}#chatgpt-mermaid-\_r_4rl\_ .label text,#chatgpt-mermaid-\_r_4rl\_ span{fill:rgb(13, 13, 13);color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4rl\_ .node rect,#chatgpt-mermaid-\_r_4rl\_ .node circle,#chatgpt-mermaid-\_r_4rl\_ .node ellipse,#chatgpt-mermaid-\_r_4rl\_ .node polygon,#chatgpt-mermaid-\_r_4rl\_ .node path{fill:rgb(222, 234, 251);stroke:rgb(83, 154, 248);stroke-width:1px;}#chatgpt-mermaid-\_r_4rl\_ .rough-node .label text,#chatgpt-mermaid-\_r_4rl\_ .node .label text,#chatgpt-mermaid-\_r_4rl\_ .image-shape .label,#chatgpt-mermaid-\_r_4rl\_ .icon-shape .label{text-anchor:middle;}#chatgpt-mermaid-\_r_4rl\_ .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#chatgpt-mermaid-\_r_4rl\_ .rough-node .label,#chatgpt-mermaid-\_r_4rl\_ .node .label,#chatgpt-mermaid-\_r_4rl\_ .image-shape .label,#chatgpt-mermaid-\_r_4rl\_ .icon-shape .label{text-align:center;}#chatgpt-mermaid-\_r_4rl\_ .node.clickable{cursor:pointer;}#chatgpt-mermaid-\_r_4rl\_ .root .anchor path{fill:rgb(143, 143, 143)!important;stroke-width:0;stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_4rl\_ .arrowheadPath{fill:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_4rl\_ .edgePath .path{stroke:rgb(143, 143, 143);stroke-width:1px;}#chatgpt-mermaid-\_r_4rl\_ .flowchart-link{stroke:rgb(143, 143, 143);fill:none;}#chatgpt-mermaid-\_r_4rl\_ .edgeLabel{background-color:rgb(252, 252, 252);text-align:center;}#chatgpt-mermaid-\_r_4rl\_ .edgeLabel p{background-color:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_4rl\_ .edgeLabel rect{opacity:0.5;background-color:rgb(252, 252, 252);fill:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_4rl\_ .labelBkg{background-color:rgba(252, 252, 252, 0.5);}#chatgpt-mermaid-\_r_4rl\_ .cluster rect{fill:rgb(243, 243, 243);stroke:rgba(0, 0, 0, 0.1);stroke-width:1px;}#chatgpt-mermaid-\_r_4rl\_ .cluster text{fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4rl\_ .cluster span{color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4rl\_ div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:12px;background:rgb(243, 243, 243);border:1px solid rgba(0, 0, 0, 0.1);border-radius:2px;pointer-events:none;z-index:100;}#chatgpt-mermaid-\_r_4rl\_ .flowchartTitleText{text-anchor:middle;font-size:18px;fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4rl\_ rect.text{fill:none;stroke-width:0;}#chatgpt-mermaid-\_r_4rl\_ .icon-shape,#chatgpt-mermaid-\_r_4rl\_ .image-shape{background-color:rgb(252, 252, 252);text-align:center;}#chatgpt-mermaid-\_r_4rl\_ .icon-shape p,#chatgpt-mermaid-\_r_4rl\_ .image-shape p{background-color:rgb(252, 252, 252);padding:2px;}#chatgpt-mermaid-\_r_4rl\_ .icon-shape .label rect,#chatgpt-mermaid-\_r_4rl\_ .image-shape .label rect{opacity:0.5;background-color:rgb(252, 252, 252);fill:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_4rl\_ .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#chatgpt-mermaid-\_r_4rl\_ .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#chatgpt-mermaid-\_r_4rl\_ .node .neo-node{stroke:rgb(83, 154, 248);}#chatgpt-mermaid-\_r_4rl\_ [data-look="neo"].node rect,#chatgpt-mermaid-\_r_4rl\_ [data-look="neo"].cluster rect,#chatgpt-mermaid-\_r_4rl\_ [data-look="neo"].node polygon{stroke:url(#chatgpt-mermaid-\_r_4rl\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_4rl\_ [data-look="neo"].swimlane.cluster rect{filter:none;}#chatgpt-mermaid-\_r_4rl\_ [data-look="neo"].node path{stroke:url(#chatgpt-mermaid-\_r_4rl\_-gradient);stroke-width:1px;}#chatgpt-mermaid-\_r_4rl\_ [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_4rl\_ [data-look="neo"].node .neo-line path{stroke:rgb(83, 154, 248);filter:none;}#chatgpt-mermaid-\_r_4rl\_ [data-look="neo"].node circle{stroke:url(#chatgpt-mermaid-\_r_4rl\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_4rl\_ [data-look="neo"].node circle .state-start{fill:#000000;}#chatgpt-mermaid-\_r_4rl\_ [data-look="neo"].icon-shape .icon{fill:url(#chatgpt-mermaid-\_r_4rl\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_4rl\_ [data-look="neo"].icon-shape .icon-neo path{stroke:url(#chatgpt-mermaid-\_r_4rl\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_4rl\_ .node text{font-size:14px;font-weight:600;letter-spacing:normal;fill:rgb(0, 79, 153);}#chatgpt-mermaid-\_r_4rl\_ .edgeLabels text{font-size:13px;font-weight:600;letter-spacing:-0.08px;fill:rgb(0, 79, 153);}#chatgpt-mermaid-\_r_4rl\_ .node tspan[font-weight="normal"],#chatgpt-mermaid-\_r_4rl\_ .edgeLabels tspan[font-weight="normal"]{font-weight:600;}#chatgpt-mermaid-\_r_4rl\_ .edgeLabel .label rect{opacity:1;rx:13px;ry:13px;fill:rgb(245, 250, 255);stroke:rgb(206, 219, 229);stroke-width:1px;}#chatgpt-mermaid-\_r_4rl\_ .node rect,#chatgpt-mermaid-\_r_4rl\_ .node circle,#chatgpt-mermaid-\_r_4rl\_ .node ellipse,#chatgpt-mermaid-\_r_4rl\_ .node polygon,#chatgpt-mermaid-\_r_4rl\_ .node path{fill:rgb(229, 243, 255);stroke:rgba(0, 0, 0, 0.1);stroke-width:1px;}#chatgpt-mermaid-\_r_4rl\_ .node rect{rx:16px;ry:16px;}#chatgpt-mermaid-\_r_4rl\_ .mermaid-decision .label-container{fill:rgb(245, 250, 255);stroke:rgb(206, 219, 229);stroke-dasharray:2,2;}#chatgpt-mermaid-\_r_4rl\_ .edgePaths .flowchart-link{stroke:rgb(143, 143, 143);stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;}#chatgpt-mermaid-\_r_4rl\_ .marker{fill:rgb(143, 143, 143);stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_4rl\_ :root{--mermaid-font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";}Angular / React ClientHTTP RequestASP.NET Core MiddlewareAuthentication / AuthorizationEmployee ControllerEmployee ServiceData Access LayerSQL ServerJSON HTTP Response
+
+### **Real-World Example**
+
+When Priya retrieves employee details, the request travels from the Angular application to the controller.
+
+The controller invokes the employee service, which retrieves the required record through Entity Framework Core.
+
+The result is returned as JSON to the Angular application.
+
+## **6.3 Development Environment and Prerequisites**
+
+Before starting implementation, ensure that the following software is available.
+
+| Software                             | Purpose                    |
+| ------------------------------------ | -------------------------- |
+| Visual Studio 2022                   | Application development    |
+| .NET 10 SDK or compatible target SDK | Build and run ASP.NET Core |
+| SQL Server Developer Edition         | Database                   |
+| SQL Server Management Studio         | Database management        |
+| Postman                              | API testing                |
+| Browser                              | Swagger UI                 |
+| Git                                  | Source control             |
+
+For the implementation, we will use ASP.NET Core Web API with Entity Framework Core.
+
+### **Verify .NET Installation**
+
+Open PowerShell or Visual Studio Developer PowerShell.
+
+Execute:
+
+```
+dotnet --version
 ```
 
-### Step 1: Retrieve All Posts
+To check all installed SDKs:
 
-```http
-GET https://jsonplaceholder.typicode
+```
+dotnet --list-sdks
+```
+
+### **Create a New Web API Project**
+
+Open Visual Studio.
+
+1. Select **Create a new project**.
+2. Search for ASP.NET Core Web API.
+3. Select the Web API template.
+4. Enter the project name as `EmployeeManagement.API`.
+5. Select the target framework.
+6. Enable OpenAPI support if the template provides the option.
+7. Create the project.
+
+Alternatively, execute:
+
+```
+dotnet new webapi -n EmployeeManagement.API
+cd EmployeeManagement.API
+```
+
+### **Real-World Example**
+
+A development team can use the same project template to create APIs for employee management, inventory management, customer management, and order processing.
+
+The underlying architecture remains similar even though the business requirements differ.
+
+## **6.4 Recommended Project Structure**
+
+A well-organized project makes it easier to maintain and extend the application.
+
+Create the following folder structure:
+
+```
+EmployeeManagement.API/
+│
+├── Controllers/
+│   ├── AuthController.cs
+│   └── EmployeesController.cs
+│
+├── Models/
+│   └── Employee.cs
+│
+├── DTOs/
+│   ├── EmployeeRequest.cs
+│   ├── EmployeeResponse.cs
+│   └── UpdateEmployeeRequest.cs
+│
+├── Services/
+│   ├── IEmployeeService.cs
+│   └── EmployeeService.cs
+│
+├── Data/
+│   └── EmployeeDbContext.cs
+│
+├── Middleware/
+│   └── GlobalExceptionMiddleware.cs
+│
+├── appsettings.json
+│
+└── Program.cs
+```
+
+### **Understanding Each Folder**
+
+| Folder / File    | Responsibility                                 |
+| ---------------- | ---------------------------------------------- |
+| Controllers      | Handles HTTP requests and responses            |
+| Models           | Contains business entities                     |
+| DTOs             | Defines API request and response structures    |
+| Services         | Implements business logic                      |
+| Data             | Manages database communication                 |
+| Middleware       | Handles cross-cutting concerns                 |
+| Program.cs       | Configures application services and middleware |
+| appsettings.json | Contains application configuration             |
+
+### **Why Should We Separate These Responsibilities?**
+
+Imagine that all application logic is written inside one controller.
+
+As the application grows, the controller becomes difficult to maintain because it contains HTTP processing, business rules, database queries, and validation.
+
+Separating these responsibilities makes the application easier to test, modify, and extend.
+
+### **Real-World Example**
+
+Suppose the organization wants to introduce a new requirement: employees should not be registered with duplicate email addresses.
+
+If the business logic is implemented in the service layer, developers can modify the validation rule without changing the controller's responsibilities.
+
+## **6.5 Create the Employee Model**
+
+A model represents the business entity used by the application.
+
+In our scenario, the Employee model represents an employee record stored in SQL Server.
+
+Create a file named `Employee.cs` inside the Models folder.
+
+```
+namespace EmployeeManagement.API.Models;
+
+public class Employee
+{
+    public int EmployeeId { get; set; }
+
+    public string EmployeeName { get; set; } = string.Empty;
+
+    public string Email { get; set; } = string.Empty;
+
+    public string Department { get; set; } = string.Empty;
+
+    public string City { get; set; } = string.Empty;
+
+    public DateTime CreatedDate { get; set; }
+}
+```
+
+### **Understanding the Properties**
+
+| Property     | Data Type | Purpose                     |
+| ------------ | --------- | --------------------------- |
+| EmployeeId   | int       | Unique employee identifier  |
+| EmployeeName | string    | Employee's full name        |
+| Email        | string    | Employee's email address    |
+| Department   | string    | Employee's department       |
+| City         | string    | Employee's working location |
+| CreatedDate  | DateTime  | Record creation timestamp   |
+
+### **How Does This Model Relate to the Database?**
+
+Entity Framework Core uses the Employee class to represent an entity in the database.
+
+By default, EF Core can create a table named `Employees` with columns corresponding to the model properties.
+
+The `EmployeeId` property is conventionally recognized as the primary key.
+
+### **Real-World Example**
+
+When Priya registers Ravi Kumar, the API creates an Employee object containing his name, email address, department, and city.
+
+Entity Framework Core converts this object into a database insert operation.
+
+## **6.6 Create Data Transfer Objects (DTOs)**
+
+Before implementing controllers, it is important to understand DTOs.
+
+DTO stands for **Data Transfer Object**.
+
+A DTO is an object used to transfer information between different application layers or between an API and its consumer.
+
+### **Why Do We Need DTOs?**
+
+Consider an Employee database entity containing:
+
+```
+public class Employee
+{
+    public int EmployeeId { get; set; }
+
+    public string EmployeeName { get; set; }
+
+    public string Email { get; set; }
+
+    public string Department { get; set; }
+
+    public string City { get; set; }
+
+    public DateTime CreatedDate { get; set; }
+
+    public string InternalNotes { get; set; }
+}
+```
+
+Should the API expose every property to the client?
+
+No.
+
+For example, `InternalNotes` may contain confidential organizational information.
+
+DTOs allow us to control which properties are accepted from clients and which properties are returned.
+
+### **Create EmployeeRequest.cs**
+
+This DTO represents the data accepted when creating an employee.
+
+```
+using System.ComponentModel.DataAnnotations;
+
+namespace EmployeeManagement.API.DTOs;
+
+public class EmployeeRequest
+{
+    [Required]
+    [StringLength(100, MinimumLength = 3)]
+    public string EmployeeName { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(50)]
+    public string Department { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(50)]
+    public string City { get; set; } = string.Empty;
+}
+```
+
+### **Create EmployeeResponse.cs**
+
+This DTO represents the information returned to the API consumer.
+
+```
+namespace EmployeeManagement.API.DTOs;
+
+public class EmployeeResponse
+{
+    public int EmployeeId { get; set; }
+
+    public string EmployeeName { get; set; } = string.Empty;
+
+    public string Email { get; set; } = string.Empty;
+
+    public string Department { get; set; } = string.Empty;
+
+    public string City { get; set; } = string.Empty;
+
+    public DateTime CreatedDate { get; set; }
+}
+```
+
+### **Create UpdateEmployeeRequest.cs**
+
+For updating an employee, we can use a separate DTO.
+
+```
+using System.ComponentModel.DataAnnotations;
+
+namespace EmployeeManagement.API.DTOs;
+
+public class UpdateEmployeeRequest
+{
+    [Required]
+    [StringLength(100, MinimumLength = 3)]
+    public string EmployeeName { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(50)]
+    public string Department { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(50)]
+    public string City { get; set; } = string.Empty;
+}
+```
+
+### **DTO vs Model**
+
+| Feature             | Model / Entity                            | DTO                                  |
+| ------------------- | ----------------------------------------- | ------------------------------------ |
+| Primary purpose     | Represents application or database entity | Transfers data                       |
+| Database mapping    | Commonly mapped by EF Core                | Not normally mapped directly         |
+| Internal properties | May contain internal fields               | Exposes only required fields         |
+| Validation          | May contain persistence rules             | Commonly contains request validation |
+| API usage           | Should not automatically be exposed       | Designed for API communication       |
+
+### **Real-World Example**
+
+When an employee is registered, the frontend sends an EmployeeRequest.
+
+The service converts it into an Employee entity.
+
+After saving it in SQL Server, the API converts the entity into an EmployeeResponse and sends the response to the client.
+
+\#chatgpt-mermaid-\_r_4td\_{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;fill:rgb(13, 13, 13);}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#chatgpt-mermaid-\_r_4td\_ .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-\_r_4td\_ .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-\_r_4td\_ .error-icon{fill:rgb(243, 243, 243);}#chatgpt-mermaid-\_r_4td\_ .error-text{fill:rgb(13, 13, 13);stroke:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4td\_ .edge-thickness-normal{stroke-width:1px;}#chatgpt-mermaid-\_r_4td\_ .edge-thickness-thick{stroke-width:3.5px;}#chatgpt-mermaid-\_r_4td\_ .edge-pattern-solid{stroke-dasharray:0;}#chatgpt-mermaid-\_r_4td\_ .edge-thickness-invisible{stroke-width:0;fill:none;}#chatgpt-mermaid-\_r_4td\_ .edge-pattern-dashed{stroke-dasharray:3;}#chatgpt-mermaid-\_r_4td\_ .edge-pattern-dotted{stroke-dasharray:2;}#chatgpt-mermaid-\_r_4td\_ .marker{fill:rgb(143, 143, 143);stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_4td\_ .marker.cross{stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_4td\_ svg{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;}#chatgpt-mermaid-\_r_4td\_ p{margin:0;}#chatgpt-mermaid-\_r_4td\_ .label{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4td\_ .cluster-label text{fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4td\_ .cluster-label span{color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4td\_ .cluster-label span p{background-color:transparent;}#chatgpt-mermaid-\_r_4td\_ .label text,#chatgpt-mermaid-\_r_4td\_ span{fill:rgb(13, 13, 13);color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4td\_ .node rect,#chatgpt-mermaid-\_r_4td\_ .node circle,#chatgpt-mermaid-\_r_4td\_ .node ellipse,#chatgpt-mermaid-\_r_4td\_ .node polygon,#chatgpt-mermaid-\_r_4td\_ .node path{fill:rgb(222, 234, 251);stroke:rgb(83, 154, 248);stroke-width:1px;}#chatgpt-mermaid-\_r_4td\_ .rough-node .label text,#chatgpt-mermaid-\_r_4td\_ .node .label text,#chatgpt-mermaid-\_r_4td\_ .image-shape .label,#chatgpt-mermaid-\_r_4td\_ .icon-shape .label{text-anchor:middle;}#chatgpt-mermaid-\_r_4td\_ .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#chatgpt-mermaid-\_r_4td\_ .rough-node .label,#chatgpt-mermaid-\_r_4td\_ .node .label,#chatgpt-mermaid-\_r_4td\_ .image-shape .label,#chatgpt-mermaid-\_r_4td\_ .icon-shape .label{text-align:center;}#chatgpt-mermaid-\_r_4td\_ .node.clickable{cursor:pointer;}#chatgpt-mermaid-\_r_4td\_ .root .anchor path{fill:rgb(143, 143, 143)!important;stroke-width:0;stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_4td\_ .arrowheadPath{fill:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_4td\_ .edgePath .path{stroke:rgb(143, 143, 143);stroke-width:1px;}#chatgpt-mermaid-\_r_4td\_ .flowchart-link{stroke:rgb(143, 143, 143);fill:none;}#chatgpt-mermaid-\_r_4td\_ .edgeLabel{background-color:rgb(252, 252, 252);text-align:center;}#chatgpt-mermaid-\_r_4td\_ .edgeLabel p{background-color:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_4td\_ .edgeLabel rect{opacity:0.5;background-color:rgb(252, 252, 252);fill:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_4td\_ .labelBkg{background-color:rgba(252, 252, 252, 0.5);}#chatgpt-mermaid-\_r_4td\_ .cluster rect{fill:rgb(243, 243, 243);stroke:rgba(0, 0, 0, 0.1);stroke-width:1px;}#chatgpt-mermaid-\_r_4td\_ .cluster text{fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4td\_ .cluster span{color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4td\_ div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:12px;background:rgb(243, 243, 243);border:1px solid rgba(0, 0, 0, 0.1);border-radius:2px;pointer-events:none;z-index:100;}#chatgpt-mermaid-\_r_4td\_ .flowchartTitleText{text-anchor:middle;font-size:18px;fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_4td\_ rect.text{fill:none;stroke-width:0;}#chatgpt-mermaid-\_r_4td\_ .icon-shape,#chatgpt-mermaid-\_r_4td\_ .image-shape{background-color:rgb(252, 252, 252);text-align:center;}#chatgpt-mermaid-\_r_4td\_ .icon-shape p,#chatgpt-mermaid-\_r_4td\_ .image-shape p{background-color:rgb(252, 252, 252);padding:2px;}#chatgpt-mermaid-\_r_4td\_ .icon-shape .label rect,#chatgpt-mermaid-\_r_4td\_ .image-shape .label rect{opacity:0.5;background-color:rgb(252, 252, 252);fill:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_4td\_ .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#chatgpt-mermaid-\_r_4td\_ .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#chatgpt-mermaid-\_r_4td\_ .node .neo-node{stroke:rgb(83, 154, 248);}#chatgpt-mermaid-\_r_4td\_ [data-look="neo"].node rect,#chatgpt-mermaid-\_r_4td\_ [data-look="neo"].cluster rect,#chatgpt-mermaid-\_r_4td\_ [data-look="neo"].node polygon{stroke:url(#chatgpt-mermaid-\_r_4td\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_4td\_ [data-look="neo"].swimlane.cluster rect{filter:none;}#chatgpt-mermaid-\_r_4td\_ [data-look="neo"].node path{stroke:url(#chatgpt-mermaid-\_r_4td\_-gradient);stroke-width:1px;}#chatgpt-mermaid-\_r_4td\_ [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_4td\_ [data-look="neo"].node .neo-line path{stroke:rgb(83, 154, 248);filter:none;}#chatgpt-mermaid-\_r_4td\_ [data-look="neo"].node circle{stroke:url(#chatgpt-mermaid-\_r_4td\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_4td\_ [data-look="neo"].node circle .state-start{fill:#000000;}#chatgpt-mermaid-\_r_4td\_ [data-look="neo"].icon-shape .icon{fill:url(#chatgpt-mermaid-\_r_4td\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_4td\_ [data-look="neo"].icon-shape .icon-neo path{stroke:url(#chatgpt-mermaid-\_r_4td\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_4td\_ .node text{font-size:14px;font-weight:600;letter-spacing:normal;fill:rgb(0, 79, 153);}#chatgpt-mermaid-\_r_4td\_ .edgeLabels text{font-size:13px;font-weight:600;letter-spacing:-0.08px;fill:rgb(0, 79, 153);}#chatgpt-mermaid-\_r_4td\_ .node tspan[font-weight="normal"],#chatgpt-mermaid-\_r_4td\_ .edgeLabels tspan[font-weight="normal"]{font-weight:600;}#chatgpt-mermaid-\_r_4td\_ .edgeLabel .label rect{opacity:1;rx:13px;ry:13px;fill:rgb(245, 250, 255);stroke:rgb(206, 219, 229);stroke-width:1px;}#chatgpt-mermaid-\_r_4td\_ .node rect,#chatgpt-mermaid-\_r_4td\_ .node circle,#chatgpt-mermaid-\_r_4td\_ .node ellipse,#chatgpt-mermaid-\_r_4td\_ .node polygon,#chatgpt-mermaid-\_r_4td\_ .node path{fill:rgb(229, 243, 255);stroke:rgba(0, 0, 0, 0.1);stroke-width:1px;}#chatgpt-mermaid-\_r_4td\_ .node rect{rx:16px;ry:16px;}#chatgpt-mermaid-\_r_4td\_ .mermaid-decision .label-container{fill:rgb(245, 250, 255);stroke:rgb(206, 219, 229);stroke-dasharray:2,2;}#chatgpt-mermaid-\_r_4td\_ .edgePaths .flowchart-link{stroke:rgb(143, 143, 143);stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;}#chatgpt-mermaid-\_r_4td\_ .marker{fill:rgb(143, 143, 143);stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_4td\_ :root{--mermaid-font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";}JSON RequestEmployeeRequest DTOEmployee ServiceEmployee EntitySQL ServerEmployee EntityEmployeeResponse DTOJSON Response
+
+## **6.7 Configure SQL Server Database Connectivity**
+
+Now that the model and DTOs are ready, we need to configure the database.
+
+We will use Entity Framework Core to communicate with SQL Server.
+
+### **Step 1: Create the Database**
+
+Open SQL Server Management Studio.
+
+Connect to the local SQL Server instance and execute:
+
+```
+CREATE DATABASE EmployeeManagementDB;
+GO
+```
+
+This creates the database that will store employee records.
+
+### **Step 2: Install Entity Framework Core Packages**
+
+Open the Package Manager Console in Visual Studio.
+
+Execute:
+
+```
+Install-Package Microsoft.EntityFrameworkCore.SqlServer
+
+Install-Package Microsoft.EntityFrameworkCore.Tools
+
+Install-Package Microsoft.EntityFrameworkCore.Design
+```
+
+Alternatively, use the .NET CLI:
+
+```
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+
+dotnet add package Microsoft.EntityFrameworkCore.Tools
+
+dotnet add package Microsoft.EntityFrameworkCore.Design
+```
+
+Ensure that all EF Core packages use compatible versions matching the target framework and one another.
+
+### **Step 3: Configure the Connection String**
+
+Open `appsettings.json`.
+
+Add the following configuration:
+
+```
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=EmployeeManagementDB;Trusted_Connection=True;TrustServerCertificate=True;"
+  }
+}
+```
+
+For a named SQL Server instance, use:
+
+```
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost\\SQLEXPRESS;Database=EmployeeManagementDB;Trusted_Connection=True;TrustServerCertificate=True;"
+  }
+}
+```
+
+The actual connection string depends on the SQL Server instance installed on the participant's machine.
+
+For production, use appropriate certificate validation rather than relying on `TrustServerCertificate=True`, and keep credentials outside source-controlled configuration files.
+
+### **Understanding the Connection String**
+
+| Parameter              | Purpose                                  |
+| ---------------------- | ---------------------------------------- |
+| Server                 | SQL Server instance name                 |
+| Database               | Database name                            |
+| Trusted_Connection     | Uses Windows authentication              |
+| TrustServerCertificate | Controls certificate validation behavior |
+
+### **Step 4: Create EmployeeDbContext.cs**
+
+A DbContext represents a session with the database.
+
+It manages entity tracking, querying, inserting, updating, and deleting records.
+
+Create `EmployeeDbContext.cs` inside the Data folder.
+
+```
+using Microsoft.EntityFrameworkCore;
+using EmployeeManagement.API.Models;
+
+namespace EmployeeManagement.API.Data;
+
+public class EmployeeDbContext : DbContext
+{
+    public EmployeeDbContext(
+        DbContextOptions<EmployeeDbContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<Employee> Employees { get; set; }
+}
+```
+
+### **Understanding DbSet**
+
+```
+public DbSet<Employee> Employees { get; set; }
+```
+
+This property represents the Employees collection in the database.
+
+It allows developers to execute operations such as:
+
+```
+_dbContext.Employees.ToListAsync();
+
+_dbContext.Employees.Add(employee);
+
+_dbContext.Employees.Remove(employee);
+```
+
+Entity Framework Core translates these operations into appropriate SQL commands.
+
+### **Step 5: Configure Database Connection in Program.cs**
+
+Add the following configuration:
+
+```
+using EmployeeManagement.API.Data;
+using Microsoft.EntityFrameworkCore;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+
+builder.Services.AddDbContext<EmployeeDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString(
+            "DefaultConnection")));
+
+var app = builder.Build();
+
+app.UseHttpsRedirection();
+
+app.MapControllers();
+
+app.Run();
+```
+
+The `AddDbContext` method registers EmployeeDbContext with the dependency injection container.
+
+ASP.NET Core can now provide the DbContext to other application components through constructor injection.
+
+### **Step 6: Create Database Migration**
+
+Open Package Manager Console.
+
+Execute:
+
+```
+Add-Migration InitialCreate
+
+Update-Database
+```
+
+Alternatively:
+
+```
+dotnet ef migrations add InitialCreate
+
+dotnet ef database update
+```
+
+The migration process generates the necessary database schema based on the Employee model.
+
+[How to Perform CRUD Operations with Entity Framework and ASP.NET Core | ComponentOne](https://images.openai.com/static-rsc-4/9H56FJSXWCO6OWfFdDRx9n_QXRWliWVyhrFl6soQcCALf5p4N3UaTF0bGje_IvjNlbow8o9ovN_MF8leYXMTP59ic8rmuBr9xJi-Lh5V4Pw8W32ENvPvLJFdaI0dlM7wBxBkPF_X0sMzh7SjpGf29UjjCIIk0IID6iS2qwxjdlk?purpose=inline)
+
+[developer.mescius.com](https://developer.mescius.com/blogs/how-to-perform-crud-operations-with-entity-framework-and-aspnet-core?utm_source=chatgpt.com)
+
+### **Verify the Database**
+
+Open SSMS and execute:
+
+```
+USE EmployeeManagementDB;
+GO
+
+SELECT * FROM Employees;
+```
+
+Initially, the table will be empty.
+
+Checkpoint
+
+At this stage, learners should have:
+
+- Created an ASP.NET Core Web API project.
+- Created the Employee model.
+- Configured SQL Server connectivity.
+- Created the EmployeeDbContext.
+- Generated the Employees database table using EF Core migrations.
+
+### **Real-World Example**
+
+When the API receives an employee registration request, Entity Framework Core communicates with SQL Server and stores the employee record.
+
+The developer does not need to write the INSERT statement manually for this basic operation.
+
+## **6.8 Implement the Service Layer**
+
+The service layer contains business logic.
+
+It separates application rules from HTTP request handling and database operations.
+
+### **Why Do We Need a Service Layer?**
+
+Consider a requirement that employee email addresses must be unique.
+
+We could write the duplicate-email validation directly inside the controller.
+
+However, this creates tight coupling between HTTP processing and business rules.
+
+A service layer provides a central location for these rules and allows the same logic to be reused by multiple controllers or other application components.
+
+### **Step 1: Create IEmployeeService.cs**
+
+This interface defines the operations supported by the employee service.
+
+```
+using EmployeeManagement.API.DTOs;
+
+namespace EmployeeManagement.API.Services;
+
+public interface IEmployeeService
+{
+    Task<List<EmployeeResponse>> GetAllAsync();
+
+    Task<EmployeeResponse?> GetByIdAsync(int id);
+
+    Task<EmployeeResponse> CreateAsync(
+        EmployeeRequest request);
+
+    Task<EmployeeResponse?> UpdateAsync(
+        int id,
+        UpdateEmployeeRequest request);
+
+    Task<bool> DeleteAsync(int id);
+}
+```
+
+### **Understanding the Interface**
+
+| Method       | Responsibility               |
+| ------------ | ---------------------------- |
+| GetAllAsync  | Retrieves all employees      |
+| GetByIdAsync | Retrieves one employee       |
+| CreateAsync  | Creates a new employee       |
+| UpdateAsync  | Updates an existing employee |
+| DeleteAsync  | Deletes an employee          |
+
+The interface defines what the service can do without specifying how the operations are implemented.
+
+### **Step 2: Implement EmployeeService.cs**
+
+Create the implementation inside the Services folder.
+
+```
+using EmployeeManagement.API.Data;
+using EmployeeManagement.API.DTOs;
+using EmployeeManagement.API.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace EmployeeManagement.API.Services;
+
+public class EmployeeService : IEmployeeService
+{
+    private readonly EmployeeDbContext _context;
+
+    public EmployeeService(EmployeeDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<List<EmployeeResponse>> GetAllAsync()
+    {
+        return await _context.Employees
+            .AsNoTracking()
+            .Select(e => new EmployeeResponse
+            {
+                EmployeeId = e.EmployeeId,
+                EmployeeName = e.EmployeeName,
+                Email = e.Email,
+                Department = e.Department,
+                City = e.City,
+                CreatedDate = e.CreatedDate
+            })
+            .ToListAsync();
+    }
+
+    public async Task<EmployeeResponse?> GetByIdAsync(int id)
+    {
+        return await _context.Employees
+            .AsNoTracking()
+            .Where(e => e.EmployeeId == id)
+            .Select(e => new EmployeeResponse
+            {
+                EmployeeId = e.EmployeeId,
+                EmployeeName = e.EmployeeName,
+                Email = e.Email,
+                Department = e.Department,
+                City = e.City,
+                CreatedDate = e.CreatedDate
+            })
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<EmployeeResponse> CreateAsync(
+        EmployeeRequest request)
+    {
+        bool emailExists = await _context.Employees
+            .AnyAsync(e => e.Email == request.Email);
+
+        if (emailExists)
+        {
+            throw new InvalidOperationException(
+                "An employee with this email already exists.");
+        }
+
+        var employee = new Employee
+        {
+            EmployeeName = request.EmployeeName,
+            Email = request.Email,
+            Department = request.Department,
+            City = request.City,
+            CreatedDate = DateTime.UtcNow
+        };
+
+        _context.Employees.Add(employee);
+
+        await _context.SaveChangesAsync();
+
+        return new EmployeeResponse
+        {
+            EmployeeId = employee.EmployeeId,
+            EmployeeName = employee.EmployeeName,
+            Email = employee.Email,
+            Department = employee.Department,
+            City = employee.City,
+            CreatedDate = employee.CreatedDate
+        };
+    }
+
+    public async Task<EmployeeResponse?> UpdateAsync(
+        int id,
+        UpdateEmployeeRequest request)
+    {
+        var employee = await _context.Employees
+            .FirstOrDefaultAsync(e => e.EmployeeId == id);
+
+        if (employee == null)
+            return null;
+
+        bool emailExists = await _context.Employees
+            .AnyAsync(e =>
+                e.Email == request.Email &&
+                e.EmployeeId != id);
+
+        if (emailExists)
+        {
+            throw new InvalidOperationException(
+                "Email is already used by another employee.");
+        }
+
+        employee.EmployeeName = request.EmployeeName;
+        employee.Email = request.Email;
+        employee.Department = request.Department;
+        employee.City = request.City;
+
+        await _context.SaveChangesAsync();
+
+        return new EmployeeResponse
+        {
+            EmployeeId = employee.EmployeeId,
+            EmployeeName = employee.EmployeeName,
+            Email = employee.Email,
+            Department = employee.Department,
+            City = employee.City,
+            CreatedDate = employee.CreatedDate
+        };
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var employee = await _context.Employees
+            .FirstOrDefaultAsync(e => e.EmployeeId == id);
+
+        if (employee == null)
+            return false;
+
+        _context.Employees.Remove(employee);
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+}
+```
+
+### **Important Concepts Used**
+
+**Dependency Injection**
+
+The EmployeeDbContext is supplied through the constructor rather than being created manually.
+
+This reduces coupling and makes the service easier to test.
+
+**Asynchronous Programming**
+
+Methods such as `ToListAsync()` and `SaveChangesAsync()` allow database operations to execute asynchronously.
+
+This helps the application handle multiple requests efficiently without blocking request-processing threads while waiting for I/O operations.
+
+**AsNoTracking()**
+
+This method tells EF Core not to track the returned entities.
+
+It is useful for read-only queries because it reduces unnecessary change-tracking overhead.
+
+**LINQ**
+
+LINQ allows developers to query application data using C# expressions.
+
+For example:
+
+```
+_context.Employees
+    .Where(e => e.City == "Bengaluru")
+    .ToListAsync();
+```
+
+This retrieves employees working in Bengaluru.
+
+### **Step 3: Register the Service in Program.cs**
+
+Add:
+
+```
+builder.Services.AddScoped<
+    IEmployeeService,
+    EmployeeService>();
+```
+
+`AddScoped` creates one service instance per HTTP request scope.
+
+### **Real-World Example**
+
+Suppose the HR team introduces a rule that only employees belonging to approved departments can be registered.
+
+This rule can be implemented inside EmployeeService without changing how the controller receives HTTP requests.
+
+## **6.9 Implement Employee REST API Controller**
+
+Now that the service layer is ready, we can create the controller that exposes employee operations through HTTP endpoints.
+
+Create `EmployeesController.cs` inside the Controllers folder.
+
+```
+using EmployeeManagement.API.DTOs;
+using EmployeeManagement.API.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace EmployeeManagement.API.Controllers;
+
+[ApiController]
+[Route("api/v1/employees")]
+public class EmployeesController : ControllerBase
+{
+    private readonly IEmployeeService _employeeService;
+
+    public EmployeesController(
+        IEmployeeService employeeService)
+    {
+        _employeeService = employeeService;
+    }
+
+    // GET: api/v1/employees
+
+    [HttpGet]
+    [ProducesResponseType(typeof(List<EmployeeResponse>), 200)]
+    public async Task<IActionResult> GetAll()
+    {
+        var employees =
+            await _employeeService.GetAllAsync();
+
+        return Ok(employees);
+    }
+
+    // GET: api/v1/employees/101
+
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(EmployeeResponse), 200)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var employee =
+            await _employeeService.GetByIdAsync(id);
+
+        if (employee == null)
+            return NotFound();
+
+        return Ok(employee);
+    }
+
+    // POST: api/v1/employees
+
+    [HttpPost]
+    [ProducesResponseType(typeof(EmployeeResponse), 201)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(409)]
+    public async Task<IActionResult> Create(
+        EmployeeRequest request)
+    {
+        var employee =
+            await _employeeService.CreateAsync(request);
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = employee.EmployeeId },
+            employee);
+    }
+
+    // PUT: api/v1/employees/101
+
+    [HttpPut("{id:int}")]
+    [ProducesResponseType(typeof(EmployeeResponse), 200)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> Update(
+        int id,
+        UpdateEmployeeRequest request)
+    {
+        var employee =
+            await _employeeService.UpdateAsync(id, request);
+
+        if (employee == null)
+            return NotFound();
+
+        return Ok(employee);
+    }
+
+    // PATCH: api/v1/employees/101/city
+
+    [HttpPatch("{id:int}/city")]
+    [ProducesResponseType(typeof(EmployeeResponse), 200)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> UpdateCity(
+        int id,
+        UpdateEmployeeCityRequest request)
+    {
+        var employee =
+            await _employeeService.UpdateCityAsync(
+                id, request.City);
+
+        if (employee == null)
+            return NotFound();
+
+        return Ok(employee);
+    }
+
+    // DELETE: api/v1/employees/101
+
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> Delete(int id)
+    {
+        bool deleted =
+            await _employeeService.DeleteAsync(id);
+
+        if (!deleted)
+            return NotFound();
+
+        return NoContent();
+    }
+}
+```
+
+The PATCH action above requires two small additions to the service contract and implementation.
+
+Create `UpdateEmployeeCityRequest.cs`:
+
+```
+using System.ComponentModel.DataAnnotations;
+
+namespace EmployeeManagement.API.DTOs;
+
+public class UpdateEmployeeCityRequest
+{
+    [Required]
+    [StringLength(50)]
+    public string City { get; set; } = string.Empty;
+}
+```
+
+Add this method to `IEmployeeService`:
+
+```
+Task<EmployeeResponse?> UpdateCityAsync(
+    int id,
+    string city);
+```
+
+Add this implementation to `EmployeeService`:
+
+```
+public async Task<EmployeeResponse?> UpdateCityAsync(
+    int id,
+    string city)
+{
+    var employee = await _context.Employees
+        .FirstOrDefaultAsync(e => e.EmployeeId == id);
+
+    if (employee == null)
+        return null;
+
+    employee.City = city;
+
+    await _context.SaveChangesAsync();
+
+    return new EmployeeResponse
+    {
+        EmployeeId = employee.EmployeeId,
+        EmployeeName = employee.EmployeeName,
+        Email = employee.Email,
+        Department = employee.Department,
+        City = employee.City,
+        CreatedDate = employee.CreatedDate
+    };
+}
+```
+
+### **Understanding the Controller**
+
+| Attribute / Method  | Responsibility                                                                 |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `[ApiController]`   | Enables API-specific behaviors, including automatic model validation responses |
+| `[Route]`           | Defines the common endpoint route                                              |
+| `[HttpGet]`         | Maps HTTP GET requests                                                         |
+| `[HttpPost]`        | Maps HTTP POST requests                                                        |
+| `[HttpPut]`         | Maps HTTP PUT requests                                                         |
+| `[HttpPatch]`       | Maps HTTP PATCH requests                                                       |
+| `[HttpDelete]`      | Maps HTTP DELETE requests                                                      |
+| `Ok()`              | Returns HTTP 200                                                               |
+| `CreatedAtAction()` | Returns HTTP 201 with a location identifying the new resource                  |
+| `NotFound()`        | Returns HTTP 404                                                               |
+| `NoContent()`       | Returns HTTP 204                                                               |
+
+### **Understanding CreatedAtAction()**
+
+Consider:
+
+```
+return CreatedAtAction(
+    nameof(GetById),
+    new { id = employee.EmployeeId },
+    employee);
+```
+
+This method performs three important activities:
+
+1. Returns HTTP 201 Created.
+2. Includes the newly created employee in the response.
+3. Generates a Location header pointing to the newly created resource.
+
+Example:
+
+```
+HTTP/1.1 201 Created
+Location: /api/v1/employees/101
+```
+
+### **Real-World Example**
+
+Priya submits a request to register Ravi Kumar.
+
+The POST endpoint invokes the service layer, which saves Ravi's information in SQL Server.
+
+The controller returns HTTP 201 and provides the resource location so that the frontend can retrieve the newly created employee.
+
+## **6.10 Configure Application Middleware and Services**
+
+We now need to connect all the application components through the dependency injection container and configure the middleware pipeline.
+
+Open `Program.cs`.
+
+Use the following configuration:
+
+```
+using EmployeeManagement.API.Data;
+using EmployeeManagement.API.Services;
+using Microsoft.EntityFrameworkCore;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Register Controllers
+builder.Services.AddControllers();
+
+// Configure SQL Server
+builder.Services.AddDbContext<EmployeeDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString(
+            "DefaultConnection")));
+
+// Register Employee Service
+builder.Services.AddScoped<
+    IEmployeeService,
+    EmployeeService>();
+
+// Configure OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+// Configure Middleware Pipeline
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+```
+
+The preceding configuration prepares the API for database access, controller execution, dependency injection, and Swagger documentation.
+
+JWT authentication will be added in Section 6.15.
+
+### **Understanding the Middleware Pipeline**
+
+Middleware components execute as HTTP requests pass through the ASP.NET Core application.
+
+\#chatgpt-mermaid-\_r_51e\_{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;fill:rgb(13, 13, 13);}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#chatgpt-mermaid-\_r_51e\_ .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-\_r_51e\_ .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-\_r_51e\_ .error-icon{fill:rgb(243, 243, 243);}#chatgpt-mermaid-\_r_51e\_ .error-text{fill:rgb(13, 13, 13);stroke:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_51e\_ .edge-thickness-normal{stroke-width:1px;}#chatgpt-mermaid-\_r_51e\_ .edge-thickness-thick{stroke-width:3.5px;}#chatgpt-mermaid-\_r_51e\_ .edge-pattern-solid{stroke-dasharray:0;}#chatgpt-mermaid-\_r_51e\_ .edge-thickness-invisible{stroke-width:0;fill:none;}#chatgpt-mermaid-\_r_51e\_ .edge-pattern-dashed{stroke-dasharray:3;}#chatgpt-mermaid-\_r_51e\_ .edge-pattern-dotted{stroke-dasharray:2;}#chatgpt-mermaid-\_r_51e\_ .marker{fill:rgb(143, 143, 143);stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_51e\_ .marker.cross{stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_51e\_ svg{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;}#chatgpt-mermaid-\_r_51e\_ p{margin:0;}#chatgpt-mermaid-\_r_51e\_ .label{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_51e\_ .cluster-label text{fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_51e\_ .cluster-label span{color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_51e\_ .cluster-label span p{background-color:transparent;}#chatgpt-mermaid-\_r_51e\_ .label text,#chatgpt-mermaid-\_r_51e\_ span{fill:rgb(13, 13, 13);color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_51e\_ .node rect,#chatgpt-mermaid-\_r_51e\_ .node circle,#chatgpt-mermaid-\_r_51e\_ .node ellipse,#chatgpt-mermaid-\_r_51e\_ .node polygon,#chatgpt-mermaid-\_r_51e\_ .node path{fill:rgb(222, 234, 251);stroke:rgb(83, 154, 248);stroke-width:1px;}#chatgpt-mermaid-\_r_51e\_ .rough-node .label text,#chatgpt-mermaid-\_r_51e\_ .node .label text,#chatgpt-mermaid-\_r_51e\_ .image-shape .label,#chatgpt-mermaid-\_r_51e\_ .icon-shape .label{text-anchor:middle;}#chatgpt-mermaid-\_r_51e\_ .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#chatgpt-mermaid-\_r_51e\_ .rough-node .label,#chatgpt-mermaid-\_r_51e\_ .node .label,#chatgpt-mermaid-\_r_51e\_ .image-shape .label,#chatgpt-mermaid-\_r_51e\_ .icon-shape .label{text-align:center;}#chatgpt-mermaid-\_r_51e\_ .node.clickable{cursor:pointer;}#chatgpt-mermaid-\_r_51e\_ .root .anchor path{fill:rgb(143, 143, 143)!important;stroke-width:0;stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_51e\_ .arrowheadPath{fill:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_51e\_ .edgePath .path{stroke:rgb(143, 143, 143);stroke-width:1px;}#chatgpt-mermaid-\_r_51e\_ .flowchart-link{stroke:rgb(143, 143, 143);fill:none;}#chatgpt-mermaid-\_r_51e\_ .edgeLabel{background-color:rgb(252, 252, 252);text-align:center;}#chatgpt-mermaid-\_r_51e\_ .edgeLabel p{background-color:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_51e\_ .edgeLabel rect{opacity:0.5;background-color:rgb(252, 252, 252);fill:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_51e\_ .labelBkg{background-color:rgba(252, 252, 252, 0.5);}#chatgpt-mermaid-\_r_51e\_ .cluster rect{fill:rgb(243, 243, 243);stroke:rgba(0, 0, 0, 0.1);stroke-width:1px;}#chatgpt-mermaid-\_r_51e\_ .cluster text{fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_51e\_ .cluster span{color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_51e\_ div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:12px;background:rgb(243, 243, 243);border:1px solid rgba(0, 0, 0, 0.1);border-radius:2px;pointer-events:none;z-index:100;}#chatgpt-mermaid-\_r_51e\_ .flowchartTitleText{text-anchor:middle;font-size:18px;fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_51e\_ rect.text{fill:none;stroke-width:0;}#chatgpt-mermaid-\_r_51e\_ .icon-shape,#chatgpt-mermaid-\_r_51e\_ .image-shape{background-color:rgb(252, 252, 252);text-align:center;}#chatgpt-mermaid-\_r_51e\_ .icon-shape p,#chatgpt-mermaid-\_r_51e\_ .image-shape p{background-color:rgb(252, 252, 252);padding:2px;}#chatgpt-mermaid-\_r_51e\_ .icon-shape .label rect,#chatgpt-mermaid-\_r_51e\_ .image-shape .label rect{opacity:0.5;background-color:rgb(252, 252, 252);fill:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_51e\_ .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#chatgpt-mermaid-\_r_51e\_ .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#chatgpt-mermaid-\_r_51e\_ .node .neo-node{stroke:rgb(83, 154, 248);}#chatgpt-mermaid-\_r_51e\_ [data-look="neo"].node rect,#chatgpt-mermaid-\_r_51e\_ [data-look="neo"].cluster rect,#chatgpt-mermaid-\_r_51e\_ [data-look="neo"].node polygon{stroke:url(#chatgpt-mermaid-\_r_51e\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_51e\_ [data-look="neo"].swimlane.cluster rect{filter:none;}#chatgpt-mermaid-\_r_51e\_ [data-look="neo"].node path{stroke:url(#chatgpt-mermaid-\_r_51e\_-gradient);stroke-width:1px;}#chatgpt-mermaid-\_r_51e\_ [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_51e\_ [data-look="neo"].node .neo-line path{stroke:rgb(83, 154, 248);filter:none;}#chatgpt-mermaid-\_r_51e\_ [data-look="neo"].node circle{stroke:url(#chatgpt-mermaid-\_r_51e\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_51e\_ [data-look="neo"].node circle .state-start{fill:#000000;}#chatgpt-mermaid-\_r_51e\_ [data-look="neo"].icon-shape .icon{fill:url(#chatgpt-mermaid-\_r_51e\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_51e\_ [data-look="neo"].icon-shape .icon-neo path{stroke:url(#chatgpt-mermaid-\_r_51e\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_51e\_ .node text{font-size:14px;font-weight:600;letter-spacing:normal;fill:rgb(0, 79, 153);}#chatgpt-mermaid-\_r_51e\_ .edgeLabels text{font-size:13px;font-weight:600;letter-spacing:-0.08px;fill:rgb(0, 79, 153);}#chatgpt-mermaid-\_r_51e\_ .node tspan[font-weight="normal"],#chatgpt-mermaid-\_r_51e\_ .edgeLabels tspan[font-weight="normal"]{font-weight:600;}#chatgpt-mermaid-\_r_51e\_ .edgeLabel .label rect{opacity:1;rx:13px;ry:13px;fill:rgb(245, 250, 255);stroke:rgb(206, 219, 229);stroke-width:1px;}#chatgpt-mermaid-\_r_51e\_ .node rect,#chatgpt-mermaid-\_r_51e\_ .node circle,#chatgpt-mermaid-\_r_51e\_ .node ellipse,#chatgpt-mermaid-\_r_51e\_ .node polygon,#chatgpt-mermaid-\_r_51e\_ .node path{fill:rgb(229, 243, 255);stroke:rgba(0, 0, 0, 0.1);stroke-width:1px;}#chatgpt-mermaid-\_r_51e\_ .node rect{rx:16px;ry:16px;}#chatgpt-mermaid-\_r_51e\_ .mermaid-decision .label-container{fill:rgb(245, 250, 255);stroke:rgb(206, 219, 229);stroke-dasharray:2,2;}#chatgpt-mermaid-\_r_51e\_ .edgePaths .flowchart-link{stroke:rgb(143, 143, 143);stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;}#chatgpt-mermaid-\_r_51e\_ .marker{fill:rgb(143, 143, 143);stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_51e\_ :root{--mermaid-font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";}Incoming HTTP RequestHTTPS RedirectionSwagger MiddlewareAuthentication MiddlewareAuthorization MiddlewareControllerService LayerDatabaseHTTP Response
+
+The actual middleware order depends on configuration and environment. Authentication must be placed before authorization.
+
+### **Real-World Example**
+
+When a request arrives at the Employee API, ASP.NET Core processes it through the configured middleware pipeline.
+
+If the request requires authentication, the authentication middleware identifies the caller before authorization rules are evaluated.
+
+## **6.11 Run and Test the REST API**
+
+We have now implemented the basic CRUD operations.
+
+Let's execute the application and test the endpoints.
+
+### **Step 1: Run the Application**
+
+In Visual Studio, press F5 or Ctrl + F5.
+
+Alternatively, execute:
+
+```
+dotnet run
+```
+
+The application starts and displays its listening URL.
+
+For example:
+
+```
+https://localhost:7001
+```
+
+The actual port will depend on your launch configuration.
+
+### **Step 2: Open Swagger UI**
+
+Open:
+
+```
+https://localhost:7001/swagger
+```
+
+Swagger UI displays the available endpoints.
+
+[Getting Started with ASP.NET Core Web API: A Beginner's Guide](https://images.openai.com/static-rsc-4/pIjMFdrGmwjTh4UhCzy_NQM9cjP8a308_OSBQlbsRUviTZtcgbLYbDLwR74lXbSqrgwyj01u9CauaqyUUnFbqPllVepqv9s8kR43yFPAAST4xFSsFLtNm9n8YWXf-YZvv-1Me2WnwuLf2uJQEpUQ8Z1Ben2yOCE0TtaXmHkCSlU?purpose=inline)
+
+[c-sharpcorner.com](https://www.c-sharpcorner.com/blogs/getting-started-with-asp-net-core-web-api-a-beginners-guide?utm_source=chatgpt.com)
+
+Swagger UI allows developers to:
+
+- Explore available endpoints.
+- View HTTP methods.
+- Understand request parameters.
+- Enter JSON request bodies.
+- Execute API calls.
+- Inspect response status codes.
+- Examine returned JSON data.
+
+### **Step 3: Test GET – Retrieve All Employees**
+
+Endpoint:
+
+```
+GET /api/v1/employees
+```
+
+Initially, the response should be an empty array:
+
+```
+[]
+```
+
+Expected status:
+
+```
+200 OK
+```
+
+### **Step 4: Test POST – Create an Employee**
+
+Endpoint:
+
+```
+POST /api/v1/employees
+```
+
+Request:
+
+```
+{
+  "employeeName": "Ravi Kumar",
+  "email": "ravi@company.in",
+  "department": "Development",
+  "city": "Bengaluru"
+}
+```
+
+Expected response:
+
+```
+{
+  "employeeId": 1,
+  "employeeName": "Ravi Kumar",
+  "email": "ravi@company.in",
+  "department": "Development",
+  "city": "Bengaluru",
+  "createdDate": "2026-11-25T09:00:00Z"
+}
+```
+
+The employee ID is generated by SQL Server.
+
+Expected status:
+
+```
+201 Created
+```
+
+### **Step 5: Test GET – Retrieve Employee by ID**
+
+Endpoint:
+
+```
+GET /api/v1/employees/1
+```
+
+Expected response:
+
+```
+{
+  "employeeId": 1,
+  "employeeName": "Ravi Kumar",
+  "email": "ravi@company.in",
+  "department": "Development",
+  "city": "Bengaluru",
+  "createdDate": "2026-11-25T09:00:00Z"
+}
+```
+
+Expected status:
+
+```
+200 OK
+```
+
+### **Step 6: Test PUT – Update Employee**
+
+Endpoint:
+
+```
+PUT /api/v1/employees/1
+```
+
+Request:
+
+```
+{
+  "employeeName": "Ravi Kumar",
+  "email": "ravi@company.in",
+  "department": "Architecture",
+  "city": "Hyderabad"
+}
+```
+
+Expected result: The employee's department and city are updated.
+
+Expected status:
+
+```
+200 OK
+```
+
+### **Step 7: Test PATCH – Update Only City**
+
+Endpoint:
+
+```
+PATCH /api/v1/employees/1/city
+```
+
+Request:
+
+```
+{
+  "city": "Chennai"
+}
+```
+
+Expected result: Only the city is modified. The other employee properties remain unchanged.
+
+Expected status:
+
+```
+200 OK
+```
+
+### **Step 8: Test DELETE – Delete Employee**
+
+Endpoint:
+
+```
+DELETE /api/v1/employees/1
+```
+
+Expected status:
+
+```
+204 No Content
+```
+
+### **Verify Database Records**
+
+Open SSMS and execute:
+
+```
+USE EmployeeManagementDB;
+GO
+
+SELECT
+    EmployeeId,
+    EmployeeName,
+    Email,
+    Department,
+    City,
+    CreatedDate
+FROM Employees;
+```
+
+You should be able to see the employee records created through the REST API.
+
+Learning checkpoint
+
+Participants should now understand how HTTP requests are mapped to controller actions, how services process business rules, how EF Core communicates with SQL Server, and how the API returns JSON responses.
+
+### **Real-World Example**
+
+An HR administrator creates, retrieves, updates, and deletes employee records through a web application.
+
+Every operation is processed by the same REST API, regardless of whether the request originates from Angular, React, Postman, or another application.
+
+## **6.12 Implement Input Validation**
+
+A good REST API must validate incoming information before processing it.
+
+Consider the following request:
+
+```
+{
+  "employeeName": "",
+  "email": "invalid-email",
+  "department": "",
+  "city": "Bengaluru"
+}
+```
+
+This request should not be accepted because the employee name and department are missing and the email address is invalid.
+
+### **How Does ASP.NET Core Perform Validation?**
+
+We already added data annotations to our DTO:
+
+```
+[Required]
+[StringLength(100, MinimumLength = 3)]
+public string EmployeeName { get; set; }
+```
+
+These attributes define validation rules.
+
+Because the controller uses `[ApiController]`, ASP.NET Core automatically checks model validation and normally returns HTTP 400 when the submitted model is invalid.
+
+### **Example Validation Response**
+
+```
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "EmployeeName": [
+      "The EmployeeName field is required."
+    ],
+    "Email": [
+      "The Email field is not a valid e-mail address."
+    ]
+  }
+}
+```
+
+The exact error structure may vary based on framework configuration.
+
+### **Additional Business Validation**
+
+Data annotations handle common input validation.
+
+However, business validation must also be implemented in the service layer.
+
+Examples:
+
+- Employee email must be unique.
+- Department must be valid.
+- Employee age must satisfy organizational policies.
+- Employee status must follow business rules.
+
+### **Database-Level Validation**
+
+Application-level validation alone is not enough for important integrity rules.
+
+For example, two requests might simultaneously attempt to register the same email address.
+
+A database unique index should also enforce email uniqueness.
+
+Add this configuration to `EmployeeDbContext`:
+
+```
+protected override void OnModelCreating(
+    ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<Employee>()
+        .HasIndex(e => e.Email)
+        .IsUnique();
+}
+```
+
+Then create and apply a new migration:
+
+```
+Add-Migration AddUniqueEmployeeEmail
+
+Update-Database
+```
+
+### **Real-World Example**
+
+Two HR administrators attempt to register the same employee using the same email address.
+
+The service layer checks for duplicates, and the database unique index provides an additional guarantee against duplicate records.
+
+## **6.13 Implement Centralized Exception Handling**
+
+In a real-world application, exceptions may occur because of:
+
+- Database connectivity problems.
+- Invalid database operations.
+- Duplicate records.
+- External service failures.
+- Unexpected application errors.
+
+Handling exceptions separately inside every controller makes the application difficult to maintain.
+
+ASP.NET Core provides middleware for centralized exception handling.
+
+### **Why Do We Need Global Exception Handling?**
+
+Consider an application with 30 controllers.
+
+If every controller contains its own try-catch blocks, the same exception-handling logic may be repeated many times.
+
+A global exception handler centralizes this responsibility.
+
+### **Create GlobalExceptionMiddleware.cs**
+
+```
+using Microsoft.AspNetCore.Mvc;
+
+namespace EmployeeManagement.API.Middleware;
+
+public class GlobalExceptionMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ILogger<GlobalExceptionMiddleware> _logger;
+
+    public GlobalExceptionMiddleware(
+        RequestDelegate next,
+        ILogger<GlobalExceptionMiddleware> logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Business conflict occurred.");
+
+            await WriteProblemResponse(
+                context,
+                StatusCodes.Status409Conflict,
+                "Business Conflict",
+                ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "An unexpected error occurred.");
+
+            await WriteProblemResponse(
+                context,
+                StatusCodes.Status500InternalServerError,
+                "Internal Server Error",
+                "An unexpected error occurred.");
+        }
+    }
+
+    private static async Task WriteProblemResponse(
+        HttpContext context,
+        int statusCode,
+        string title,
+        string detail)
+    {
+        context.Response.Clear();
+
+        context.Response.StatusCode = statusCode;
+
+        context.Response.ContentType =
+            "application/problem+json";
+
+        var problem = new ProblemDetails
+        {
+            Status = statusCode,
+            Title = title,
+            Detail = detail,
+            Instance = context.Request.Path
+        };
+
+        await context.Response.WriteAsJsonAsync(
+            problem,
+            contentType: "application/problem+json");
+    }
+}
+```
+
+### **Register Middleware in Program.cs**
+
+Add the middleware before controller execution:
+
+```
+app.UseMiddleware<GlobalExceptionMiddleware>();
+```
+
+The relevant order becomes:
+
+```
+app.UseHttpsRedirection();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.MapControllers();
+```
+
+The exception middleware must wrap the downstream middleware and endpoints whose exceptions it should handle.
+
+### **Example Error Response**
+
+If an employee is registered with a duplicate email address:
+
+```
+HTTP/1.1 409 Conflict
+Content-Type: application/problem+json
+```
+
+```
+{
+  "type": "about:blank",
+  "title": "Business Conflict",
+  "status": 409,
+  "detail": "An employee with this email already exists.",
+  "instance": "/api/v1/employees"
+}
+```
+
+### **Important Security Consideration**
+
+Never return internal stack traces, SQL statements, connection strings, or confidential implementation details to API consumers.
+
+Log detailed technical information internally and return safe error messages externally.
+
+### **Real-World Example**
+
+The SQL Server database becomes temporarily unavailable.
+
+Instead of exposing a database exception to the frontend, the API logs the technical details and returns an appropriate server error response.
+
+## **6.14 Document the API Using OpenAPI and Swagger UI**
+
+Documentation is an important part of API development.
+
+A developer consuming an API should be able to understand its endpoints, request formats, authentication requirements, and response structures without examining the backend source code.
+
+OpenAPI provides a standardized description of HTTP APIs.
+
+Swagger UI provides an interactive interface for exploring and testing documented endpoints.
+
+### **Configure Swagger**
+
+For the example application, install:
+
+```
+Install-Package Swashbuckle.AspNetCore
+```
+
+Configure services in `Program.cs`:
+
+```
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen();
+```
+
+Configure middleware:
+
+```
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+
+    app.UseSwaggerUI();
+}
+```
+
+### **Access Swagger UI**
+
+Run the application and open:
+
+```
+https://localhost:7001/swagger
+```
+
+Swagger UI will display the documented Employee Management endpoints.
+
+### **Add API Metadata**
+
+We can configure additional documentation details:
+
+```
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc(
+        "v1",
+        new Microsoft.OpenApi.Models.OpenApiInfo
+        {
+            Title = "Employee Management API",
+            Version = "v1",
+            Description =
+                "REST API for managing employee information."
+        });
+});
+```
+
+### **What Should API Documentation Contain?**
+
+| Documentation Element | Description                   |
+| --------------------- | ----------------------------- |
+| API Title             | Name of the API               |
+| Version               | API version                   |
+| Endpoint              | Available URL                 |
+| HTTP Method           | GET, POST, PUT, PATCH, DELETE |
+| Parameters            | Input values                  |
+| Request Schema        | Expected JSON                 |
+| Response Schema       | Returned JSON                 |
+| Status Codes          | Possible HTTP responses       |
+| Security              | Authentication requirements   |
+
+### **Real-World Example**
+
+A frontend developer working in Pune needs to integrate the Employee API.
+
+Instead of asking the backend developer for every endpoint and JSON structure, the frontend developer opens Swagger UI and understands the API contract.
+
+## **6.15 Secure the REST API Using JWT Authentication**
+
+Until now, we have developed an API that allows clients to access employee operations.
+
+However, there is an important security problem.
+
+Anyone who knows the API endpoint may attempt to retrieve, modify, or delete employee information.
+
+We need to restrict access to authorized users.
+
+In this section, we will integrate JWT authentication and role-based authorization.
+
+### **Authentication Requirements**
+
+Our application will support two roles:
+
+| Role     | Permissions                                |
+| -------- | ------------------------------------------ |
+| Admin    | View, create, update, and delete employees |
+| Employee | View employee information                  |
+
+The following security rules will apply:
+
+- Users must authenticate before accessing protected endpoints.
+- The authentication API issues an access token after successful login.
+- Clients must send the token using the Authorization header.
+- The API validates the token before processing protected requests.
+- Administrative operations are restricted to users with the Admin role.
+
+### **JWT Authentication Architecture**
+
+\#chatgpt-mermaid-\_r_575\_{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;fill:rgb(13, 13, 13);}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#chatgpt-mermaid-\_r_575\_ .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-\_r_575\_ .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-\_r_575\_ .error-icon{fill:rgb(243, 243, 243);}#chatgpt-mermaid-\_r_575\_ .error-text{fill:rgb(13, 13, 13);stroke:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_575\_ .edge-thickness-normal{stroke-width:1px;}#chatgpt-mermaid-\_r_575\_ .edge-thickness-thick{stroke-width:3.5px;}#chatgpt-mermaid-\_r_575\_ .edge-pattern-solid{stroke-dasharray:0;}#chatgpt-mermaid-\_r_575\_ .edge-thickness-invisible{stroke-width:0;fill:none;}#chatgpt-mermaid-\_r_575\_ .edge-pattern-dashed{stroke-dasharray:3;}#chatgpt-mermaid-\_r_575\_ .edge-pattern-dotted{stroke-dasharray:2;}#chatgpt-mermaid-\_r_575\_ .marker{fill:rgb(143, 143, 143);stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_575\_ .marker.cross{stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_575\_ svg{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;}#chatgpt-mermaid-\_r_575\_ p{margin:0;}#chatgpt-mermaid-\_r_575\_ .label{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_575\_ .cluster-label text{fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_575\_ .cluster-label span{color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_575\_ .cluster-label span p{background-color:transparent;}#chatgpt-mermaid-\_r_575\_ .label text,#chatgpt-mermaid-\_r_575\_ span{fill:rgb(13, 13, 13);color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_575\_ .node rect,#chatgpt-mermaid-\_r_575\_ .node circle,#chatgpt-mermaid-\_r_575\_ .node ellipse,#chatgpt-mermaid-\_r_575\_ .node polygon,#chatgpt-mermaid-\_r_575\_ .node path{fill:rgb(222, 234, 251);stroke:rgb(83, 154, 248);stroke-width:1px;}#chatgpt-mermaid-\_r_575\_ .rough-node .label text,#chatgpt-mermaid-\_r_575\_ .node .label text,#chatgpt-mermaid-\_r_575\_ .image-shape .label,#chatgpt-mermaid-\_r_575\_ .icon-shape .label{text-anchor:middle;}#chatgpt-mermaid-\_r_575\_ .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#chatgpt-mermaid-\_r_575\_ .rough-node .label,#chatgpt-mermaid-\_r_575\_ .node .label,#chatgpt-mermaid-\_r_575\_ .image-shape .label,#chatgpt-mermaid-\_r_575\_ .icon-shape .label{text-align:center;}#chatgpt-mermaid-\_r_575\_ .node.clickable{cursor:pointer;}#chatgpt-mermaid-\_r_575\_ .root .anchor path{fill:rgb(143, 143, 143)!important;stroke-width:0;stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_575\_ .arrowheadPath{fill:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_575\_ .edgePath .path{stroke:rgb(143, 143, 143);stroke-width:1px;}#chatgpt-mermaid-\_r_575\_ .flowchart-link{stroke:rgb(143, 143, 143);fill:none;}#chatgpt-mermaid-\_r_575\_ .edgeLabel{background-color:rgb(252, 252, 252);text-align:center;}#chatgpt-mermaid-\_r_575\_ .edgeLabel p{background-color:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_575\_ .edgeLabel rect{opacity:0.5;background-color:rgb(252, 252, 252);fill:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_575\_ .labelBkg{background-color:rgba(252, 252, 252, 0.5);}#chatgpt-mermaid-\_r_575\_ .cluster rect{fill:rgb(243, 243, 243);stroke:rgba(0, 0, 0, 0.1);stroke-width:1px;}#chatgpt-mermaid-\_r_575\_ .cluster text{fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_575\_ .cluster span{color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_575\_ div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:12px;background:rgb(243, 243, 243);border:1px solid rgba(0, 0, 0, 0.1);border-radius:2px;pointer-events:none;z-index:100;}#chatgpt-mermaid-\_r_575\_ .flowchartTitleText{text-anchor:middle;font-size:18px;fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_575\_ rect.text{fill:none;stroke-width:0;}#chatgpt-mermaid-\_r_575\_ .icon-shape,#chatgpt-mermaid-\_r_575\_ .image-shape{background-color:rgb(252, 252, 252);text-align:center;}#chatgpt-mermaid-\_r_575\_ .icon-shape p,#chatgpt-mermaid-\_r_575\_ .image-shape p{background-color:rgb(252, 252, 252);padding:2px;}#chatgpt-mermaid-\_r_575\_ .icon-shape .label rect,#chatgpt-mermaid-\_r_575\_ .image-shape .label rect{opacity:0.5;background-color:rgb(252, 252, 252);fill:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_575\_ .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#chatgpt-mermaid-\_r_575\_ .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#chatgpt-mermaid-\_r_575\_ .node .neo-node{stroke:rgb(83, 154, 248);}#chatgpt-mermaid-\_r_575\_ [data-look="neo"].node rect,#chatgpt-mermaid-\_r_575\_ [data-look="neo"].cluster rect,#chatgpt-mermaid-\_r_575\_ [data-look="neo"].node polygon{stroke:url(#chatgpt-mermaid-\_r_575\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_575\_ [data-look="neo"].swimlane.cluster rect{filter:none;}#chatgpt-mermaid-\_r_575\_ [data-look="neo"].node path{stroke:url(#chatgpt-mermaid-\_r_575\_-gradient);stroke-width:1px;}#chatgpt-mermaid-\_r_575\_ [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_575\_ [data-look="neo"].node .neo-line path{stroke:rgb(83, 154, 248);filter:none;}#chatgpt-mermaid-\_r_575\_ [data-look="neo"].node circle{stroke:url(#chatgpt-mermaid-\_r_575\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_575\_ [data-look="neo"].node circle .state-start{fill:#000000;}#chatgpt-mermaid-\_r_575\_ [data-look="neo"].icon-shape .icon{fill:url(#chatgpt-mermaid-\_r_575\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_575\_ [data-look="neo"].icon-shape .icon-neo path{stroke:url(#chatgpt-mermaid-\_r_575\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_575\_ .node text{font-size:14px;font-weight:600;letter-spacing:normal;fill:rgb(0, 79, 153);}#chatgpt-mermaid-\_r_575\_ .edgeLabels text{font-size:13px;font-weight:600;letter-spacing:-0.08px;fill:rgb(0, 79, 153);}#chatgpt-mermaid-\_r_575\_ .node tspan[font-weight="normal"],#chatgpt-mermaid-\_r_575\_ .edgeLabels tspan[font-weight="normal"]{font-weight:600;}#chatgpt-mermaid-\_r_575\_ .edgeLabel .label rect{opacity:1;rx:13px;ry:13px;fill:rgb(245, 250, 255);stroke:rgb(206, 219, 229);stroke-width:1px;}#chatgpt-mermaid-\_r_575\_ .node rect,#chatgpt-mermaid-\_r_575\_ .node circle,#chatgpt-mermaid-\_r_575\_ .node ellipse,#chatgpt-mermaid-\_r_575\_ .node polygon,#chatgpt-mermaid-\_r_575\_ .node path{fill:rgb(229, 243, 255);stroke:rgba(0, 0, 0, 0.1);stroke-width:1px;}#chatgpt-mermaid-\_r_575\_ .node rect{rx:16px;ry:16px;}#chatgpt-mermaid-\_r_575\_ .mermaid-decision .label-container{fill:rgb(245, 250, 255);stroke:rgb(206, 219, 229);stroke-dasharray:2,2;}#chatgpt-mermaid-\_r_575\_ .edgePaths .flowchart-link{stroke:rgb(143, 143, 143);stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;}#chatgpt-mermaid-\_r_575\_ .marker{fill:rgb(143, 143, 143);stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_575\_ :root{--mermaid-font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";}User LoginAuthentication ControllerValidate CredentialsValid User?401 UnauthorizedGenerate JWTReturn Access TokenClient Sends Bearer TokenJWT AuthenticationMiddlewareToken Valid?401 UnauthorizedAuthorization CheckHas Required Role?403 ForbiddenExecute APINoYesNoYesNoYes
+
+### **Step 1: Configure JWT Settings**
+
+Add the following section to `appsettings.json`:
+
+```
+{
+  "Jwt": {
+    "Issuer": "https://identity.company.in",
+    "Audience": "employee-api"
+  }
+}
+```
+
+The signing key should be supplied through a secure configuration provider, environment variable, or secret manager rather than being committed to source control.
+
+For local development, use .NET User Secrets.
+
+For example:
+
+```
+dotnet user-secrets init
+
+dotnet user-secrets set "Jwt:SecretKey" "YourSecureRandomSigningKeyOfAtLeast32Bytes"
+```
+
+### **Step 2: Install JWT Authentication Package**
+
+Execute:
+
+```
+dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+```
+
+### **Step 3: Configure JWT Authentication in Program.cs**
+
+Add the following namespaces:
+
+```
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+```
+
+Register authentication services:
+
+```
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+
+var secretKey = jwtSettings["SecretKey"]
+    ?? throw new InvalidOperationException(
+        "JWT signing key is not configured.");
+
+var signingKey = new SymmetricSecurityKey(
+    Encoding.UTF8.GetBytes(secretKey));
+
+builder.Services
+    .AddAuthentication(
+        JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+
+                ValidIssuer = jwtSettings["Issuer"],
+
+                ValidateAudience = true,
+
+                ValidAudience = jwtSettings["Audience"],
+
+                ValidateLifetime = true,
+
+                ValidateIssuerSigningKey = true,
+
+                IssuerSigningKey = signingKey,
+
+                ClockSkew = TimeSpan.FromMinutes(1)
+            };
+    });
+
+builder.Services.AddAuthorization();
+```
+
+### **Step 4: Create an Authentication Controller**
+
+The authentication controller is responsible for validating user credentials and generating JWT access tokens.
+
+We will use a demonstration login to understand the flow. A production implementation must retrieve users from a database or identity provider and validate securely hashed passwords.
+
+```
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
+namespace EmployeeManagement.API.Controllers;
+
+[ApiController]
+[Route("api/auth")]
+public class AuthController : ControllerBase
+{
+    private readonly IConfiguration _configuration;
+
+    public AuthController(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
+    [HttpPost("login")]
+    public IActionResult Login(LoginRequest request)
+    {
+        // Demonstration credentials only.
+        if (request.Username != "ravi" ||
+            request.Password != "demo-password")
+        {
+            return Unauthorized(new
+            {
+                message = "Invalid username or password."
+            });
+        }
+
+        var jwt = _configuration.GetSection("Jwt");
+
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(
+                jwt["SecretKey"]!));
+
+        var credentials = new SigningCredentials(
+            key,
+            SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+            new Claim(
+                ClaimTypes.NameIdentifier,
+                "101"),
+
+            new Claim(
+                ClaimTypes.Name,
+                "Ravi Kumar"),
+
+            new Claim(
+                ClaimTypes.Role,
+                "Admin")
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: jwt["Issuer"],
+            audience: jwt["Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(30),
+            signingCredentials: credentials);
+
+        var tokenString =
+            new JwtSecurityTokenHandler()
+                .WriteToken(token);
+
+        return Ok(new
+        {
+            accessToken = tokenString,
+            tokenType = "Bearer",
+            expiresIn = 1800
+        });
+    }
+}
+
+public class LoginRequest
+{
+    public string Username { get; set; } = "";
+
+    public string Password { get; set; } = "";
+}
+```
+
+### **Step 5: Protect Employee Endpoints**
+
+Update the Employee controller.
+
+Add:
+
+```
+using Microsoft.AspNetCore.Authorization;
+```
+
+Apply authentication to the controller:
+
+```
+[Authorize]
+[ApiController]
+[Route("api/v1/employees")]
+public class EmployeesController : ControllerBase
+{
+    // Existing CRUD methods
+}
+```
+
+This ensures that all employee endpoints require an authenticated user unless an action explicitly allows anonymous access.
+
+To restrict employee deletion to administrators, add:
+
+```
+[HttpDelete("{id:int}")]
+[Authorize(Roles = "Admin")]
+public async Task<IActionResult> Delete(int id)
+{
+    bool deleted =
+        await _employeeService.DeleteAsync(id);
+
+    if (!deleted)
+        return NotFound();
+
+    return NoContent();
+}
+```
+
+### **Step 6: Update Middleware Configuration**
+
+In `Program.cs`, configure the middleware in the correct order:
+
+```
+app.UseHttpsRedirection();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.MapControllers();
+```
+
+Authentication identifies the caller.
+
+Authorization checks whether the identified caller is allowed to perform the requested operation.
+
+### **Step 7: Test JWT Authentication Using Postman**
+
+First, invoke the login endpoint.
+
+```
+POST https://localhost:7001/api/auth/login
+Content-Type: application/json
+```
+
+Request:
+
+```
+{
+  "username": "ravi",
+  "password": "demo-password"
+}
+```
+
+Expected response:
+
+```
+{
+  "accessToken": "<JWT_ACCESS_TOKEN>",
+  "tokenType": "Bearer",
+  "expiresIn": 1800
+}
+```
+
+Copy the access token.
+
+Now invoke the employee endpoint.
+
+```
+GET https://localhost:7001/api/v1/employees
+```
+
+Add the following header:
+
+```
+Authorization: Bearer <JWT_ACCESS_TOKEN>
+```
+
+The API validates the token and returns the employee records.
+
+### **Test Different Scenarios**
+
+| Scenario                                         | Expected Status |
+| ------------------------------------------------ | --------------- |
+| Request without token                            | 401             |
+| Request with invalid token                       | 401             |
+| Request with expired token                       | 401             |
+| Valid Admin token                                | 200             |
+| Valid Employee token accessing Admin-only DELETE | 403             |
+
+### **Real-World Example**
+
+Ravi is an administrator who can manage employee information.
+
+Kavya is an employee who can view permitted employee information but cannot delete records.
+
+Both users can authenticate successfully, but their access permissions differ.
+
+This demonstrates the difference between authentication and authorization.
+
+## **6.16 Enable JWT Authentication in Swagger UI**
+
+Swagger UI can also be configured to send bearer tokens when testing protected endpoints.
+
+This is useful during development because developers do not need to switch between Swagger and Postman for every API operation.
+
+Add the following configuration to the existing `AddSwaggerGen` registration in `Program.cs`:
+
+```
+using Microsoft.OpenApi.Models;
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc(
+        "v1",
+        new OpenApiInfo
+        {
+            Title = "Employee Management API",
+            Version = "v1",
+            Description =
+                "REST API for Employee Management"
+        });
+
+    options.AddSecurityDefinition(
+        "Bearer",
+        new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description =
+                "Enter your JWT access token."
+        });
+
+    options.AddSecurityRequirement(
+        new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
+});
+```
+
+After restarting the application, open Swagger UI.
+
+You should see an **Authorize** button.
+
+[Implementing JWT Authentication with Swagger | by Abdul Rahman | Medium](https://images.openai.com/static-rsc-4/5EZIyDhrBt5jf9OIuLGCR53P9lIOtzKNx8zvn8z9mYcite00YxZbRFIRIHZK7Gi1DIrnzZtIp2MZg0p4p7LOlEHGeN2uJkHJvGhXtS_nV86ManeMoi81Q0DGUto7qlmPcifdymY6MiNKALKqeitmXieg2vavFOav1OcDhUak68s?purpose=inline)
+
+[medium.com](https://medium.com/%40rahman3593/implementing-jwt-authentication-with-swagger-ca991b7aca08?utm_source=chatgpt.com)
+
+Click Authorize and enter the access token.
+
+Swagger UI will include the token in the Authorization header when executing protected endpoints.
+
+### **Real-World Example**
+
+A backend developer is testing the Employee Management API.
+
+Instead of manually entering the token for every endpoint, the developer authenticates once in Swagger UI and tests the protected operations using the configured bearer authentication.
+
+## **6.17 Test the API Using Postman Collections**
+
+Postman collections allow developers to organize related API requests into reusable groups.
+
+For our Employee Management application, create a collection named:
+
+`Employee Management API`
+
+Create the following folders:
+
+```
+Employee Management API
+│
+├── Authentication
+│   └── Login
+│
+├── Employees
+│   ├── Get All Employees
+│   ├── Get Employee By ID
+│   ├── Create Employee
+│   ├── Update Employee
+│   ├── Update Employee City
+│   └── Delete Employee
+│
+└── Negative Scenarios
+    ├── Invalid Employee ID
+    ├── Missing Required Fields
+    ├── Duplicate Email
+    ├── Missing Token
+    └── Invalid Token
+```
+
+### **Configure Postman Environment Variables**
+
+Create an environment named `Employee API Local`.
+
+Add the following variables:
+
+| Variable    | Initial Value            |
+| ----------- | ------------------------ |
+| baseUrl     | `https://localhost:7001` |
+| accessToken | Empty                    |
+| employeeId  | Empty                    |
+
+Use the variable in API requests:
+
+```
+GET {{baseUrl}}/api/v1/employees
+```
+
+For authenticated requests, use:
+
+```
+Authorization: Bearer {{accessToken}}
+```
+
+### **Automatically Save the JWT Token**
+
+In the Login request, open the Scripts tab and add a Post-response script:
+
+```
+const response = pm.response.json();
+
+if (response.accessToken) {
+    pm.environment.set(
+        "accessToken",
+        response.accessToken
+    );
+}
+```
+
+Now, when the login request succeeds, Postman automatically stores the access token in the environment.
+
+### **Automatically Save Employee ID**
+
+In the Create Employee request, add:
+
+```
+const response = pm.response.json();
+
+if (response.employeeId) {
+    pm.environment.set(
+        "employeeId",
+        response.employeeId
+    );
+}
+```
+
+Now subsequent requests can use:
+
+```
+GET {{baseUrl}}/api/v1/employees/{{employeeId}}
+```
+
+### **Real-World Example**
+
+A QA engineer tests the entire employee registration workflow.
+
+The tester logs in, creates an employee, retrieves the generated employee ID, updates the employee information, and finally deletes the record.
+
+A Postman collection allows this workflow to be repeated without manually entering every value.
+
+## **6.18 Troubleshooting Common Issues**
+
+During practical development, participants may encounter the following problems.
+
+| Problem                      | Possible Cause                                                              | Resolution                                    |
+| ---------------------------- | --------------------------------------------------------------------------- | --------------------------------------------- |
+| `dotnet` command not found   | SDK not installed or PATH not configured                                    | Install SDK and reopen terminal               |
+| SQL Server connection failed | Incorrect server or instance name                                           | Verify SQL Server instance                    |
+| Login failed for database    | Incorrect authentication configuration                                      | Verify Windows or SQL authentication          |
+| Swagger page not found       | Swagger middleware not configured or application not running in Development | Verify middleware and environment             |
+| HTTP 404                     | Incorrect endpoint or route                                                 | Verify controller route                       |
+| HTTP 400                     | Invalid request body                                                        | Check DTO validation                          |
+| HTTP 401                     | Missing or invalid token                                                    | Verify bearer token                           |
+| HTTP 403                     | Insufficient permissions                                                    | Check role and policy                         |
+| HTTP 409                     | Duplicate employee email                                                    | Check business validation                     |
+| HTTP 500                     | Unexpected server exception                                                 | Inspect application logs                      |
+| EF Core migration failed     | Incompatible package versions or database connection issues                 | Verify EF Core packages and connection string |
+
+### **Common Developer Debugging Techniques**
+
+**1. Visual Studio Debugging**
+
+Set breakpoints inside controllers and services to inspect incoming requests and application state.
+
+**2. Logging**
+
+Use `ILogger` to record application events, warnings, and errors.
+
+**3. Postman Console**
+
+Inspect request details, headers, and scripts when debugging client-side API issues.
+
+**4. SQL Server Profiler or Extended Events**
+
+Use database diagnostic tools to understand SQL queries and database activity when necessary.
+
+**5. Browser Developer Tools**
+
+Use the Network tab to inspect HTTP requests and responses originating from frontend applications.
+
+## **6.19 Practical Assignments**
+
+The following exercises help learners reinforce the concepts through implementation.
+
+### **Assignment 1: Employee CRUD Operations**
+
+Extend the Employee Management API with the following requirements:
+
+- Create an employee.
+- Retrieve all employees.
+- Retrieve an employee by ID.
+- Update employee information.
+- Delete an employee.
+
+Learners should use the appropriate HTTP methods and return meaningful status codes.
+
+### **Assignment 2: Implement Search and Filtering**
+
+Create an endpoint that allows users to search employees by city and department.
+
+Example:
+
+```
+GET /api/v1/employees?city=Bengaluru
+```
+
+Another example:
+
+```
+GET /api/v1/employees?department=Development
+```
+
+The API should return only matching employee records.
+
+### **Assignment 3: Implement Pagination**
+
+Modify the GET endpoint to support pagination.
+
+Example:
+
+```
+GET /api/v1/employees?page=1&pageSize=10
+```
+
+The response should include the requested records and pagination metadata.
+
+### **Assignment 4: Implement Role-Based Authorization**
+
+Create two roles:
+
+- Admin.
+- Employee.
+
+Allow administrators to create, update, and delete employee records.
+
+Allow employees to retrieve only the information they are permitted to access.
+
+### **Assignment 5: Implement Global Exception Handling**
+
+Introduce centralized exception handling.
+
+The API should return consistent error responses for:
+
+- Missing employee records.
+- Duplicate email addresses.
+- Database errors.
+- Unexpected application exceptions.
+
+### **Assignment 6: API Documentation**
+
+Generate OpenAPI documentation and configure Swagger UI.
+
+Ensure that all endpoints contain meaningful descriptions, request schemas, response schemas, and security requirements.
+
+## **6.20 End-to-End Lab Execution Checklist**
+
+The following checklist can be used by participants to verify their completed implementation.
+
+**Lab completion tracker**
+
+# **0%**
+
+0 of 26 tasks completed
+
+**1. Project Setup**
+
+Create ASP.NET Core Web API project
+
+Create required folders and files
+
+Verify project runs successfully
+
+**2. Database Integration**
+
+Install EF Core packages
+
+Create Employee model and DbContext
+
+Configure SQL Server connection
+
+Create database migration
+
+Verify Employees table
+
+**3. API Implementation**
+
+Create request and response DTOs
+
+Implement Employee service
+
+Implement Employee controller
+
+Implement GET and POST
+
+Implement PUT and PATCH
+
+Implement DELETE
+
+**4. Validation and Error Handling**
+
+Implement DTO validation
+
+Implement duplicate email validation
+
+Configure global exception handling
+
+Verify HTTP status codes
+
+**5. Documentation and Security**
+
+Configure OpenAPI and Swagger UI
+
+Implement JWT authentication
+
+Implement role-based authorization
+
+Enable bearer authentication in Swagger
+
+**6. Testing**
+
+Test all CRUD operations using Postman
+
+Test invalid request scenarios
+
+Test missing and invalid JWT
+
+Verify records in SQL Server
+
+## **6.21 Expected Learning Outcomes**
+
+After completing this module, participants should be able to:
+
+1. Design and create REST APIs using ASP.NET Core Web API.
+2. Understand the responsibilities of controllers, services, DTOs, and database access components.
+3. Implement CRUD operations using GET, POST, PUT, PATCH, and DELETE.
+4. Work with JSON serialization and deserialization.
+5. Connect REST APIs to SQL Server using Entity Framework Core.
+6. Implement input validation and centralized exception handling.
+7. Generate interactive API documentation using Swagger UI and OpenAPI.
+8. Implement JWT authentication and role-based authorization.
+9. Test REST APIs using Postman.
+10. Troubleshoot common API development and integration issues.
+
+### **Module 6 – Final Trainer Note**
+
+The most effective way to deliver this module is to build the Employee Management API progressively during the classroom session.
+
+Do not provide learners with the complete source code at the beginning. Let them create the project, implement the layers, test each endpoint, and gradually introduce database integration and security.
+
+**Recommended teaching sequence:**
+
+| Session | Practical Activity                                |
+| ------- | ------------------------------------------------- |
+| Lab 1   | Create ASP.NET Core Web API                       |
+| Lab 2   | Implement Employee CRUD operations                |
+| Lab 3   | Integrate SQL Server using EF Core                |
+| Lab 4   | Implement DTOs, validation and exception handling |
+| Lab 5   | Configure Swagger and OpenAPI                     |
+| Lab 6   | Implement JWT authentication and authorization    |
+| Lab 7   | Test complete API using Postman                   |
+
+**Final deliverable:** A working, database-connected, documented and JWT-secured Employee Management REST API.
+
+This completes Module 6 without recreating Modules 1–5.
+

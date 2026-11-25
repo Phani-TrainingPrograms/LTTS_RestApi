@@ -127,7 +127,8 @@ An employee management application might use the following APIs:
 | Update employee details | PUT /api/employees/101 |
 | Delete an employee | DELETE /api/employees/101 |
 
-![Conceptual illustration of a frontend application communicating with a backend through an API gateway](./images/api-client-server.png)
+<img width="1774" height="887" alt="image" src="https://github.com/user-attachments/assets/90e653f2-fe31-4b03-9ace-f97b9aed56cf" />
+
 
 ---
 

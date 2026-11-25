@@ -5382,10 +5382,6 @@ After restarting the application, open Swagger UI.
 
 You should see an **Authorize** button.
 
-[Implementing JWT Authentication with Swagger | by Abdul Rahman | Medium](https://images.openai.com/static-rsc-4/5EZIyDhrBt5jf9OIuLGCR53P9lIOtzKNx8zvn8z9mYcite00YxZbRFIRIHZK7Gi1DIrnzZtIp2MZg0p4p7LOlEHGeN2uJkHJvGhXtS_nV86ManeMoi81Q0DGUto7qlmPcifdymY6MiNKALKqeitmXieg2vavFOav1OcDhUak68s?purpose=inline)
-
-[medium.com](https://medium.com/%40rahman3593/implementing-jwt-authentication-with-swagger-ca991b7aca08?utm_source=chatgpt.com)
-
 Click Authorize and enter the access token.
 
 Swagger UI will include the token in the Authorization header when executing protected endpoints.
@@ -5612,80 +5608,6 @@ Generate OpenAPI documentation and configure Swagger UI.
 
 Ensure that all endpoints contain meaningful descriptions, request schemas, response schemas, and security requirements.
 
-## **6.20 End-to-End Lab Execution Checklist**
-
-The following checklist can be used by participants to verify their completed implementation.
-
-**Lab completion tracker**
-
-# **0%**
-
-0 of 26 tasks completed
-
-**1. Project Setup**
-
-Create ASP.NET Core Web API project
-
-Create required folders and files
-
-Verify project runs successfully
-
-**2. Database Integration**
-
-Install EF Core packages
-
-Create Employee model and DbContext
-
-Configure SQL Server connection
-
-Create database migration
-
-Verify Employees table
-
-**3. API Implementation**
-
-Create request and response DTOs
-
-Implement Employee service
-
-Implement Employee controller
-
-Implement GET and POST
-
-Implement PUT and PATCH
-
-Implement DELETE
-
-**4. Validation and Error Handling**
-
-Implement DTO validation
-
-Implement duplicate email validation
-
-Configure global exception handling
-
-Verify HTTP status codes
-
-**5. Documentation and Security**
-
-Configure OpenAPI and Swagger UI
-
-Implement JWT authentication
-
-Implement role-based authorization
-
-Enable bearer authentication in Swagger
-
-**6. Testing**
-
-Test all CRUD operations using Postman
-
-Test invalid request scenarios
-
-Test missing and invalid JWT
-
-Verify records in SQL Server
-
 ## **6.21 Expected Learning Outcomes**
 
 After completing this module, participants should be able to:
@@ -5700,26 +5622,6 @@ After completing this module, participants should be able to:
 8. Implement JWT authentication and role-based authorization.
 9. Test REST APIs using Postman.
 10. Troubleshoot common API development and integration issues.
-
-### **Module 6 – Final Trainer Note**
-
-The most effective way to deliver this module is to build the Employee Management API progressively during the classroom session.
-
-Do not provide learners with the complete source code at the beginning. Let them create the project, implement the layers, test each endpoint, and gradually introduce database integration and security.
-
-**Recommended teaching sequence:**
-
-| Session | Practical Activity                                |
-| ------- | ------------------------------------------------- |
-| Lab 1   | Create ASP.NET Core Web API                       |
-| Lab 2   | Implement Employee CRUD operations                |
-| Lab 3   | Integrate SQL Server using EF Core                |
-| Lab 4   | Implement DTOs, validation and exception handling |
-| Lab 5   | Configure Swagger and OpenAPI                     |
-| Lab 6   | Implement JWT authentication and authorization    |
-| Lab 7   | Test complete API using Postman                   |
-
-**Final deliverable:** A working, database-connected, documented and JWT-secured Employee Management REST API.
 
 This completes Module 6 without recreating Modules 1–5.
 

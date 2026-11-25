@@ -254,7 +254,8 @@ This evolution created the foundation for modern web APIs.
 | Web-Based | Customers access banking through browsers |
 | API-Based | Mobile, web, and partner applications consume common APIs |
 
-![Evolution from mainframe to distributed and API-based architecture](./images/server-communication-evolution.png)
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/271df9e2-40da-4371-a92c-5eecebb421c6" />
+
 
 ---
 

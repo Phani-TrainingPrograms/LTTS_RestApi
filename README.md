@@ -3302,9 +3302,7 @@ The same API can later be consumed by a mobile application without implementing 
 
 Before implementing the application, let's understand the architecture.
 
-[Project Architecture Diagram In Net Asp Net Mvc Architecture](https://images.openai.com/static-rsc-4/0DBT7y3i8RDyWDgC4AXcRDVDQ8RuzTzBneKEzl2NqSkbDPr0NG1cc9_2WsNQhQYHFwC_Ya7fh-_z8yeJgLUkG4Cph7x7BZOxrFdbz9zkN0gJVMiHCJlrWMwJL5eg7UoIi7DCAmGD0XYC4L6XHt95TdeVvRSEvIUGITd5PtvptRk?purpose=inline)
-
-[neo005kmquser.z21.web.core.windows.net](https://neo005kmquser.z21.web.core.windows.net/project-architecture-diagram-in-net.html?utm_source=chatgpt.com)
+<img width="600" height="350" alt="image" src="https://github.com/user-attachments/assets/9caf34d3-5dcd-4ad6-ad38-b399e0a8cd61" />
 
 The application follows a layered architecture to separate responsibilities.
 <img width="776" height="597" alt="image" src="https://github.com/user-attachments/assets/f8cb7675-236d-47bd-bee8-67b997bdfc26" />

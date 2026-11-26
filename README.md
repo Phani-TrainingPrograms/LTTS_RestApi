@@ -3307,6 +3307,8 @@ Before implementing the application, let's understand the architecture.
 [neo005kmquser.z21.web.core.windows.net](https://neo005kmquser.z21.web.core.windows.net/project-architecture-diagram-in-net.html?utm_source=chatgpt.com)
 
 The application follows a layered architecture to separate responsibilities.
+<img width="776" height="597" alt="image" src="https://github.com/user-attachments/assets/f8cb7675-236d-47bd-bee8-67b997bdfc26" />
+
 
 ### **Architecture Components**
 

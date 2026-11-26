@@ -1,0 +1,34 @@
+﻿@page
+@model EmployeeManagementClient.Pages.Employees.IndexModel
+
+<h1>Employee Management</h1>
+<hr/>
+<div>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Emp ID</th>
+                <th>Emp Name</th>
+                <th>Emp Email</th>
+                <th>Emp City</th>
+                <th>Emp Dept</th>
+                <th>Created</th>
+                <th>Operations</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach(var rec in Model.EmployeesList)
+            {
+                <tr>
+                    <td>@rec.EmployeeId</td>
+                    <td>@rec.EmployeeName</td>
+                    <td>@rec.Email</td>
+                    <td>@rec.City</td>
+                    <td>@rec.Department</td>
+                    <td>@rec.CreatedDate.ToString("dd-MMM-yyyy")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

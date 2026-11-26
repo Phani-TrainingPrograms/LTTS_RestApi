@@ -21,10 +21,18 @@ namespace EmployeeManagementClient.Services
             return await _httpClient.GetFromJsonAsync<List<Employee>>("api/employees");
         }
 
+        public async Task AddAsync(Employee emp)
+        {
+            await SetTokenAsync();
+            var res = await _httpClient.PostAsJsonAsync("api/employees", emp);
+            res.EnsureSuccessStatusCode();
+        }
+
         public async Task<Employee?>GetByIdAsync(int id)
         {
             await SetTokenAsync();
-            return null;
+            return await _httpClient.GetFromJsonAsync<Employee>(
+                $"api/employees/{id}");
         }
         private async Task SetTokenAsync()
         {
@@ -51,6 +59,26 @@ namespace EmployeeManagementClient.Services
             string token = response.Content.ReadAsStringAsync().Result;
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
+        }
+
+        public async Task UpdateAsync(Employee employee)
+        {
+            await SetTokenAsync();
+
+            var response = await _httpClient.PutAsJsonAsync(
+                $"api/employees/{employee.EmployeeId}", employee);
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            await SetTokenAsync();
+
+            var response = await _httpClient.DeleteAsync(
+                $"api/employees/{id}");
+
+            response.EnsureSuccessStatusCode();
         }
 
     }

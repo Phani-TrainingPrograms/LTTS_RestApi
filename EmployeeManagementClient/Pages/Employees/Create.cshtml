@@ -1,0 +1,43 @@
+﻿@page
+@model EmployeeManagementClient.Pages.Employees.CreateModel
+
+<h1>Add Employee</h1>
+
+<form method="post">
+    <div class="mb-3">
+        <label asp-for="Employee.EmployeeName"></label>
+        <input asp-for="Employee.EmployeeName" class="form-control" />
+        <span asp-validation-for="Employee.EmployeeName"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Employee.Email"></label>
+        <input asp-for="Employee.Email" class="form-control" />
+        <span asp-validation-for="Employee.Email"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Employee.Department"></label>
+        <input asp-for="Employee.Department" class="form-control" />
+        <span asp-validation-for="Employee.Department"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Employee.City"></label>
+        <input asp-for="Employee.City" class="form-control" />
+        <span asp-validation-for="Employee.City"
+              class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-page="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+@{
+}

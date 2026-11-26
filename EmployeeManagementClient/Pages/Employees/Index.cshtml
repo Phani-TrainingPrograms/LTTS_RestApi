@@ -3,6 +3,9 @@
 
 <h1>Employee Management</h1>
 <hr/>
+<p>
+    <a asp-page="Create" class="btn btn-primary"> Add New Employee</a>
+</p>
 <div>
     <table class="table table-bordered table-striped">
         <thead>
@@ -27,6 +30,21 @@
                     <td>@rec.City</td>
                     <td>@rec.Department</td>
                     <td>@rec.CreatedDate.ToString("dd-MMM-yyyy")</td>
+                    <td>
+                        <a asp-page="Edit"
+                           asp-route-id="@rec.EmployeeId"
+                           class="btn btn-sm btn-warning">Edit</a>
+
+                        <form method="post"
+                              asp-page-handler="Delete"
+                              asp-route-id="@rec.EmployeeId"
+                              style="display:inline">
+                            <button type="submit"
+                                    class="btn btn-sm btn-danger">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
                 </tr>
             }
         </tbody>
